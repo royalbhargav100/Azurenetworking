@@ -1,0 +1,2041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Azure Networking — Zero to Pro | Banking-Grade Production Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #020b18;
+    --bg2: #040f1f;
+    --panel: #071628;
+    --panel2: #0a1d35;
+    --border: #0e3058;
+    --accent: #00d4ff;
+    --accent2: #0088cc;
+    --accent3: #00ff88;
+    --accent4: #ff6b35;
+    --accent5: #a855f7;
+    --text: #c8dff0;
+    --text2: #7aabcc;
+    --text3: #4a7a99;
+    --warn: #ff4444;
+    --gold: #ffd700;
+    --glow: 0 0 20px rgba(0,212,255,0.3);
+    --glow2: 0 0 40px rgba(0,212,255,0.15);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.7;
+  }
+
+  /* ── ANIMATED BG ── */
+  body::before {
+    content:'';
+    position:fixed; inset:0; z-index:0;
+    background:
+      radial-gradient(ellipse 80% 50% at 10% 20%, rgba(0,136,204,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 90% 80%, rgba(0,255,136,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse 40% 30% at 50% 50%, rgba(168,85,247,0.04) 0%, transparent 50%);
+    animation: bgpulse 8s ease-in-out infinite alternate;
+    pointer-events:none;
+  }
+  @keyframes bgpulse {
+    from { opacity:0.6; }
+    to   { opacity:1; }
+  }
+
+  /* ── GRID OVERLAY ── */
+  body::after {
+    content:'';
+    position:fixed; inset:0; z-index:0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size:60px 60px;
+    pointer-events:none;
+  }
+
+  .wrap { position:relative; z-index:1; max-width:1400px; margin:0 auto; padding:0 24px; }
+
+  /* ── NAV ── */
+  nav {
+    position:sticky; top:0; z-index:100;
+    background:rgba(2,11,24,0.92);
+    backdrop-filter:blur(20px);
+    border-bottom:1px solid var(--border);
+    padding:0 24px;
+  }
+  .nav-inner {
+    max-width:1400px; margin:0 auto;
+    display:flex; align-items:center; gap:16px;
+    height:56px; overflow-x:auto; white-space:nowrap;
+    scrollbar-width:none;
+  }
+  .nav-inner::-webkit-scrollbar { display:none; }
+  .nav-logo {
+    font-family:'Space Mono',monospace;
+    font-size:13px; color:var(--accent);
+    letter-spacing:2px; margin-right:8px;
+    flex-shrink:0;
+  }
+  .nav-sep { color:var(--border); flex-shrink:0; }
+  nav a {
+    font-size:12px; color:var(--text3);
+    text-decoration:none; letter-spacing:1px;
+    padding:4px 8px; border-radius:4px;
+    transition:all 0.2s; flex-shrink:0;
+    text-transform:uppercase;
+  }
+  nav a:hover { color:var(--accent); background:rgba(0,212,255,0.08); }
+
+  /* ── HERO ── */
+  .hero {
+    padding:80px 0 60px;
+    text-align:center;
+  }
+  .hero-badge {
+    display:inline-block;
+    font-family:'Space Mono',monospace;
+    font-size:11px; letter-spacing:3px;
+    color:var(--accent3); border:1px solid rgba(0,255,136,0.3);
+    padding:6px 16px; border-radius:20px;
+    margin-bottom:24px;
+    background:rgba(0,255,136,0.05);
+    animation:fadeup 0.6s ease both;
+  }
+  .hero h1 {
+    font-size:clamp(32px,6vw,72px);
+    font-weight:800; line-height:1.1;
+    letter-spacing:-2px;
+    background:linear-gradient(135deg, #fff 0%, var(--accent) 50%, var(--accent3) 100%);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    animation:fadeup 0.6s 0.1s ease both;
+    margin-bottom:16px;
+  }
+  .hero-sub {
+    font-size:16px; color:var(--text2);
+    max-width:600px; margin:0 auto 40px;
+    animation:fadeup 0.6s 0.2s ease both;
+    font-family:'JetBrains Mono',monospace;
+  }
+  .hero-stats {
+    display:flex; gap:32px; justify-content:center; flex-wrap:wrap;
+    animation:fadeup 0.6s 0.3s ease both;
+  }
+  .stat {
+    text-align:center;
+    background:var(--panel); border:1px solid var(--border);
+    padding:16px 24px; border-radius:12px;
+    min-width:120px;
+  }
+  .stat-n { font-size:28px; font-weight:800; color:var(--accent); font-family:'Space Mono',monospace; }
+  .stat-l { font-size:11px; color:var(--text3); letter-spacing:1px; text-transform:uppercase; margin-top:4px; }
+
+  @keyframes fadeup {
+    from { opacity:0; transform:translateY(20px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  /* ── SECTION ── */
+  .section {
+    margin:60px 0;
+    animation:fadeup 0.5s ease both;
+  }
+  .section-header {
+    display:flex; align-items:center; gap:16px;
+    margin-bottom:32px;
+  }
+  .section-num {
+    font-family:'Space Mono',monospace;
+    font-size:11px; color:var(--accent);
+    background:rgba(0,212,255,0.1);
+    border:1px solid rgba(0,212,255,0.3);
+    padding:4px 10px; border-radius:4px;
+    letter-spacing:2px; flex-shrink:0;
+  }
+  .section-title {
+    font-size:clamp(20px,3vw,32px);
+    font-weight:800; color:#fff;
+    letter-spacing:-0.5px;
+  }
+  .section-line {
+    flex:1; height:1px;
+    background:linear-gradient(90deg, var(--border), transparent);
+  }
+
+  /* ── CARDS GRID ── */
+  .grid2 { display:grid; grid-template-columns:repeat(auto-fit, minmax(340px,1fr)); gap:20px; }
+  .grid3 { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:16px; }
+
+  .card {
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:16px; padding:24px;
+    transition:all 0.3s;
+    position:relative; overflow:hidden;
+  }
+  .card::before {
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(135deg, rgba(0,212,255,0.03) 0%, transparent 50%);
+    opacity:0; transition:opacity 0.3s;
+  }
+  .card:hover { border-color:var(--accent2); box-shadow:var(--glow); transform:translateY(-2px); }
+  .card:hover::before { opacity:1; }
+
+  .card-icon {
+    font-size:32px; margin-bottom:12px;
+    display:block;
+  }
+  .card-title {
+    font-size:16px; font-weight:700; color:#fff;
+    margin-bottom:8px;
+  }
+  .card-sub {
+    font-size:13px; color:var(--text2);
+    font-family:'JetBrains Mono',monospace;
+    margin-bottom:12px;
+  }
+  .card-body {
+    font-size:14px; color:var(--text); line-height:1.7;
+  }
+
+  /* ── ARCHITECTURE DIAGRAM ── */
+  .arch-diagram {
+    background:var(--panel2);
+    border:1px solid var(--border);
+    border-radius:20px; padding:32px;
+    margin:24px 0;
+    position:relative; overflow:hidden;
+  }
+  .arch-diagram::before {
+    content:'ARCHITECTURE DIAGRAM';
+    position:absolute; top:12px; right:16px;
+    font-family:'Space Mono',monospace;
+    font-size:9px; letter-spacing:2px;
+    color:var(--text3);
+  }
+
+  /* ── 3D SVG DIAGRAMS ── */
+  .diagram-3d {
+    width:100%; overflow-x:auto;
+    background:var(--panel2);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:24px;
+    margin:20px 0;
+  }
+  .diagram-3d svg { display:block; margin:0 auto; }
+
+  /* ── TOPIC BLOCK ── */
+  .topic {
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:16px; margin:16px 0;
+    overflow:hidden;
+  }
+  .topic-head {
+    display:flex; align-items:center; gap:12px;
+    padding:16px 20px;
+    background:var(--panel2);
+    border-bottom:1px solid var(--border);
+    cursor:pointer;
+    transition:background 0.2s;
+  }
+  .topic-head:hover { background:rgba(0,212,255,0.05); }
+  .topic-icon { font-size:20px; }
+  .topic-name { font-size:15px; font-weight:700; color:#fff; flex:1; }
+  .topic-level {
+    font-family:'Space Mono',monospace;
+    font-size:10px; letter-spacing:2px;
+    padding:3px 10px; border-radius:20px;
+  }
+  .level-basic  { background:rgba(0,255,136,0.1); color:var(--accent3); border:1px solid rgba(0,255,136,0.3); }
+  .level-mid    { background:rgba(0,212,255,0.1); color:var(--accent);  border:1px solid rgba(0,212,255,0.3); }
+  .level-adv    { background:rgba(255,107,53,0.1); color:var(--accent4); border:1px solid rgba(255,107,53,0.3); }
+  .level-expert { background:rgba(168,85,247,0.1); color:var(--accent5); border:1px solid rgba(168,85,247,0.3); }
+
+  .topic-body { padding:20px; }
+
+  /* ── CODE BLOCK ── */
+  .code-block {
+    background:#010d1a;
+    border:1px solid var(--border);
+    border-left:3px solid var(--accent);
+    border-radius:8px; padding:16px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px; line-height:1.8;
+    overflow-x:auto; margin:12px 0;
+    white-space:pre;
+  }
+  .code-label {
+    font-family:'Space Mono',monospace;
+    font-size:10px; letter-spacing:2px;
+    color:var(--text3); text-transform:uppercase;
+    margin-bottom:6px;
+  }
+  .kw  { color:#c792ea; }
+  .str { color:#c3e88d; }
+  .num { color:#f78c6c; }
+  .cmt { color:#546e7a; font-style:italic; }
+  .fn  { color:var(--accent); }
+  .var { color:#82aaff; }
+  .prop{ color:#ffcb6b; }
+
+  /* ── FLOW STEPS ── */
+  .flow {
+    display:flex; flex-direction:column; gap:0;
+    position:relative;
+  }
+  .flow::before {
+    content:''; position:absolute; left:20px; top:0; bottom:0;
+    width:2px; background:linear-gradient(180deg, var(--accent), var(--accent5), var(--accent3));
+  }
+  .flow-step {
+    display:flex; gap:16px; align-items:flex-start;
+    padding:16px 0 16px 0;
+    position:relative;
+  }
+  .flow-dot {
+    width:42px; height:42px; flex-shrink:0;
+    background:var(--panel2); border:2px solid var(--accent);
+    border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-family:'Space Mono',monospace; font-size:13px; font-weight:700;
+    color:var(--accent); position:relative; z-index:1;
+    box-shadow:0 0 16px rgba(0,212,255,0.4);
+  }
+  .flow-content { flex:1; padding-top:8px; }
+  .flow-title { font-size:15px; font-weight:700; color:#fff; margin-bottom:6px; }
+  .flow-desc { font-size:14px; color:var(--text2); }
+
+  /* ── SECURITY TABLE ── */
+  .sec-table {
+    width:100%; border-collapse:collapse; font-size:13px;
+    font-family:'JetBrains Mono',monospace;
+  }
+  .sec-table th {
+    background:var(--panel2); color:var(--accent);
+    padding:12px 16px; text-align:left;
+    border-bottom:1px solid var(--border);
+    letter-spacing:1px; font-size:11px; text-transform:uppercase;
+  }
+  .sec-table td {
+    padding:12px 16px; border-bottom:1px solid rgba(14,48,88,0.5);
+    color:var(--text); vertical-align:top;
+  }
+  .sec-table tr:hover td { background:rgba(0,212,255,0.03); }
+  .badge {
+    display:inline-block; padding:2px 8px; border-radius:4px;
+    font-size:10px; letter-spacing:1px; font-weight:600;
+  }
+  .badge-red   { background:rgba(255,68,68,0.15);  color:#ff8888; border:1px solid rgba(255,68,68,0.3); }
+  .badge-green { background:rgba(0,255,136,0.1);   color:var(--accent3); border:1px solid rgba(0,255,136,0.3); }
+  .badge-blue  { background:rgba(0,212,255,0.1);   color:var(--accent);  border:1px solid rgba(0,212,255,0.3); }
+  .badge-gold  { background:rgba(255,215,0,0.1);   color:var(--gold);    border:1px solid rgba(255,215,0,0.3); }
+
+  /* ── CALLOUT ── */
+  .callout {
+    border-radius:12px; padding:16px 20px;
+    margin:16px 0; display:flex; gap:12px; align-items:flex-start;
+    font-size:14px;
+  }
+  .callout-info  { background:rgba(0,212,255,0.06); border:1px solid rgba(0,212,255,0.2); }
+  .callout-warn  { background:rgba(255,107,53,0.06); border:1px solid rgba(255,107,53,0.2); color:var(--accent4); }
+  .callout-tip   { background:rgba(0,255,136,0.06); border:1px solid rgba(0,255,136,0.2); color:var(--accent3); }
+  .callout-bank  { background:rgba(255,215,0,0.04); border:1px solid rgba(255,215,0,0.2); color:var(--gold); }
+  .callout-icon  { font-size:18px; flex-shrink:0; }
+  .callout-text  { flex:1; }
+  .callout-text strong { display:block; margin-bottom:4px; }
+
+  /* ── PILL TAGS ── */
+  .tags { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
+  .tag {
+    font-family:'Space Mono',monospace;
+    font-size:10px; letter-spacing:1px;
+    padding:3px 10px; border-radius:20px;
+    background:rgba(0,212,255,0.08);
+    border:1px solid rgba(0,212,255,0.2);
+    color:var(--accent);
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height:1px; background:linear-gradient(90deg, transparent, var(--border), transparent);
+    margin:40px 0;
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-row { margin:8px 0; }
+  .progress-label { display:flex; justify-content:space-between; font-size:12px; color:var(--text2); margin-bottom:4px; }
+  .progress-bar { height:6px; background:var(--panel2); border-radius:3px; overflow:hidden; }
+  .progress-fill { height:100%; border-radius:3px; transition:width 1s; }
+  .fill-blue  { background:linear-gradient(90deg, var(--accent2), var(--accent)); }
+  .fill-green { background:linear-gradient(90deg, #00aa55, var(--accent3)); }
+  .fill-purple{ background:linear-gradient(90deg, #7c3aed, var(--accent5)); }
+  .fill-orange{ background:linear-gradient(90deg, #c2410c, var(--accent4)); }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width:6px; height:6px; }
+  ::-webkit-scrollbar-track { background:var(--bg2); }
+  ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+  ::-webkit-scrollbar-thumb:hover { background:var(--accent2); }
+
+  /* ── RESPONSIVE ── */
+  @media(max-width:640px) {
+    .grid2,  .grid3 { grid-template-columns:1fr; }
+    .hero h1 { letter-spacing:-1px; }
+  }
+
+  /* Banner */
+  .banner {
+    background:linear-gradient(135deg, rgba(0,212,255,0.08), rgba(168,85,247,0.06));
+    border:1px solid var(--border);
+    border-radius:20px; padding:32px;
+    margin:40px 0; text-align:center;
+  }
+  .banner h2 { font-size:24px; color:#fff; margin-bottom:8px; }
+  .banner p  { color:var(--text2); font-size:14px; }
+
+  /* Layer box */
+  .layer-stack { display:flex; flex-direction:column; gap:4px; margin:20px 0; }
+  .layer {
+    padding:14px 20px; border-radius:8px;
+    display:flex; align-items:center; gap:12px;
+    font-size:14px; font-weight:600;
+    border:1px solid;
+    position:relative; overflow:hidden;
+  }
+  .layer::before {
+    content:''; position:absolute; left:0; top:0; bottom:0;
+    width:4px;
+  }
+  .layer-1 { background:rgba(168,85,247,0.08); border-color:rgba(168,85,247,0.3); color:var(--accent5); }
+  .layer-1::before { background:var(--accent5); }
+  .layer-2 { background:rgba(255,107,53,0.08); border-color:rgba(255,107,53,0.3); color:var(--accent4); }
+  .layer-2::before { background:var(--accent4); }
+  .layer-3 { background:rgba(0,212,255,0.08); border-color:rgba(0,212,255,0.3); color:var(--accent); }
+  .layer-3::before { background:var(--accent); }
+  .layer-4 { background:rgba(0,255,136,0.08); border-color:rgba(0,255,136,0.3); color:var(--accent3); }
+  .layer-4::before { background:var(--accent3); }
+  .layer-5 { background:rgba(255,215,0,0.08); border-color:rgba(255,215,0,0.3); color:var(--gold); }
+  .layer-5::before { background:var(--gold); }
+  .layer-icon { font-size:18px; flex-shrink:0; }
+  .layer-name { flex:1; }
+  .layer-detail { font-size:12px; font-family:'JetBrains Mono',monospace; opacity:0.7; }
+
+  /* ── TOPIC SECTIONS ANCHOR PADDING ── */
+  [id] { scroll-margin-top:70px; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <span class="nav-logo">⬡ AZURE NET</span>
+    <span class="nav-sep">│</span>
+    <a href="#fundamentals">Fundamentals</a>
+    <a href="#vnet">VNet</a>
+    <a href="#subnets">Subnets</a>
+    <a href="#nsg">NSG</a>
+    <a href="#routing">Routing</a>
+    <a href="#dns">DNS</a>
+    <a href="#peering">Peering</a>
+    <a href="#lb">Load Balancer</a>
+    <a href="#agw">App Gateway</a>
+    <a href="#firewall">Firewall</a>
+    <a href="#vpn">VPN/ExpressRoute</a>
+    <a href="#privatelink">Private Link</a>
+    <a href="#aks">AKS Networking</a>
+    <a href="#banking">Banking Grade</a>
+    <a href="#terraform">Terraform</a>
+    <a href="#devsecops">DevSecOps</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">🏦 BANKING · DATA ANALYTICS · AKS · PRODUCTION GRADE</div>
+  <h1>Azure Networking<br>Zero → Production Pro</h1>
+  <p class="hero-sub">// End-to-end guide • Beginner to Expert • Architecture diagrams • Terraform code • AKS deploy</p>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-n">18</div><div class="stat-l">Topics</div></div>
+    <div class="stat"><div class="stat-n">5</div><div class="stat-l">Levels</div></div>
+    <div class="stat"><div class="stat-n">3D</div><div class="stat-l">Diagrams</div></div>
+    <div class="stat"><div class="stat-n">IaC</div><div class="stat-l">Terraform</div></div>
+    <div class="stat"><div class="stat-n">🏦</div><div class="stat-l">Bank Grade</div></div>
+  </div>
+</div>
+
+<!-- LEARNING PATH -->
+<section class="section" id="path">
+  <div class="section-header">
+    <span class="section-num">00</span>
+    <h2 class="section-title">Learning Path — Beginner to Expert</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="layer-stack">
+    <div class="layer layer-4">
+      <span class="layer-icon">🌱</span>
+      <span class="layer-name">LEVEL 1 — BEGINNER</span>
+      <span class="layer-detail">VNet, Subnet, NSG, IP Addressing, DNS basics</span>
+    </div>
+    <div class="layer layer-3">
+      <span class="layer-icon">🔧</span>
+      <span class="layer-name">LEVEL 2 — INTERMEDIATE</span>
+      <span class="layer-detail">VNet Peering, UDR, Load Balancer, App Gateway, VPN Gateway</span>
+    </div>
+    <div class="layer layer-2">
+      <span class="layer-icon">⚙️</span>
+      <span class="layer-name">LEVEL 3 — ADVANCED</span>
+      <span class="layer-detail">Azure Firewall, Private Link/Endpoint, ExpressRoute, Hub-Spoke topology</span>
+    </div>
+    <div class="layer layer-1">
+      <span class="layer-icon">🚀</span>
+      <span class="layer-name">LEVEL 4 — AKS PRODUCTION</span>
+      <span class="layer-detail">CNI Networking, Calico policies, Ingress, Service Mesh, Egress control</span>
+    </div>
+    <div class="layer layer-5">
+      <span class="layer-icon">🏦</span>
+      <span class="layer-name">LEVEL 5 — BANKING / ENTERPRISE</span>
+      <span class="layer-detail">Zero Trust, DDoS Protection, WAF, PCI-DSS compliance, SOC2, Monitoring</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 1 — FUNDAMENTALS
+═══════════════════════════════════════════════ -->
+<section class="section" id="fundamentals">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <h2 class="section-title">Azure Networking Fundamentals</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="callout callout-info">
+    <span class="callout-icon">📘</span>
+    <div class="callout-text">
+      <strong>ఏమిటి ఇది? (What is this?)</strong>
+      Azure networking అంటే మీ cloud resources అన్నీ ఒకదానితో ఒకటి secure గా communicate చేసుకోవడానికి కావలసిన infrastructure. Real world లో ఒక building లో rooms, doors, locks, corridors ఉన్నట్టు — Azure లో VNet, Subnets, NSGs, Routes ఉంటాయి.
+    </div>
+  </div>
+
+  <!-- 3D OSI Style Layer Diagram -->
+  <div class="diagram-3d">
+    <svg viewBox="0 0 900 380" width="900" height="380" style="max-width:100%">
+      <defs>
+        <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#00d4ff" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="#0088cc" stop-opacity="0.1"/>
+        </linearGradient>
+        <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#00ff88" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="#00aa55" stop-opacity="0.1"/>
+        </linearGradient>
+        <linearGradient id="g3" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#a855f7" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="#7c3aed" stop-opacity="0.1"/>
+        </linearGradient>
+        <linearGradient id="g4" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#ff6b35" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="#c2410c" stop-opacity="0.1"/>
+        </linearGradient>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="3" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+
+      <!-- Title -->
+      <text x="450" y="28" text-anchor="middle" font-family="Space Mono" font-size="13" fill="#7aabcc" letter-spacing="3">AZURE NETWORKING COMPONENT OVERVIEW</text>
+
+      <!-- Internet box -->
+      <rect x="30" y="60" width="160" height="260" rx="12" fill="url(#g4)" stroke="#ff6b35" stroke-width="1.5"/>
+      <text x="110" y="85" text-anchor="middle" font-family="Space Mono" font-size="11" fill="#ff6b35" letter-spacing="2">INTERNET</text>
+      <rect x="50" y="100" width="120" height="32" rx="6" fill="rgba(255,107,53,0.15)" stroke="rgba(255,107,53,0.4)" stroke-width="1"/>
+      <text x="110" y="121" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#ffa07a">🌐 Public IP</text>
+      <rect x="50" y="142" width="120" height="32" rx="6" fill="rgba(255,107,53,0.15)" stroke="rgba(255,107,53,0.4)" stroke-width="1"/>
+      <text x="110" y="163" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#ffa07a">🛡️ DDoS Prot.</text>
+      <rect x="50" y="184" width="120" height="32" rx="6" fill="rgba(255,107,53,0.15)" stroke="rgba(255,107,53,0.4)" stroke-width="1"/>
+      <text x="110" y="205" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#ffa07a">⚖️ Load Bal.</text>
+      <rect x="50" y="226" width="120" height="32" rx="6" fill="rgba(255,107,53,0.15)" stroke="rgba(255,107,53,0.4)" stroke-width="1"/>
+      <text x="110" y="247" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#ffa07a">🔥 App Gateway</text>
+      <rect x="50" y="268" width="120" height="32" rx="6" fill="rgba(255,107,53,0.15)" stroke="rgba(255,107,53,0.4)" stroke-width="1"/>
+      <text x="110" y="289" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#ffa07a">📋 WAF</text>
+
+      <!-- Arrow -->
+      <line x1="195" y1="190" x2="230" y2="190" stroke="#00d4ff" stroke-width="2" marker-end="url(#arr)" stroke-dasharray="4,3"/>
+      <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#00d4ff"/></marker></defs>
+
+      <!-- VNet Box -->
+      <rect x="230" y="50" width="440" height="290" rx="14" fill="url(#g1)" stroke="#00d4ff" stroke-width="1.5"/>
+      <text x="450" y="75" text-anchor="middle" font-family="Space Mono" font-size="11" fill="#00d4ff" letter-spacing="2">VIRTUAL NETWORK (VNet)</text>
+      <text x="450" y="92" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#4a7a99">10.0.0.0/8</text>
+
+      <!-- Subnet: DMZ -->
+      <rect x="250" y="105" width="180" height="210" rx="10" fill="rgba(0,255,136,0.06)" stroke="#00ff88" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="340" y="125" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#00ff88" letter-spacing="2">DMZ SUBNET</text>
+      <rect x="265" y="135" width="150" height="32" rx="6" fill="rgba(0,255,136,0.12)" stroke="rgba(0,255,136,0.4)" stroke-width="1"/>
+      <text x="340" y="156" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#00ff88">🔥 Azure Firewall</text>
+      <rect x="265" y="177" width="150" height="32" rx="6" fill="rgba(0,255,136,0.12)" stroke="rgba(0,255,136,0.4)" stroke-width="1"/>
+      <text x="340" y="198" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#00ff88">🔑 Bastion Host</text>
+      <rect x="265" y="219" width="150" height="32" rx="6" fill="rgba(0,255,136,0.12)" stroke="rgba(0,255,136,0.4)" stroke-width="1"/>
+      <text x="340" y="240" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#00ff88">🌐 App GW + WAF</text>
+      <rect x="265" y="261" width="150" height="32" rx="6" fill="rgba(0,255,136,0.12)" stroke="rgba(0,255,136,0.4)" stroke-width="1"/>
+      <text x="340" y="282" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#00ff88">📊 NSG Rules</text>
+
+      <!-- Subnet: Private -->
+      <rect x="450" y="105" width="200" height="210" rx="10" fill="rgba(168,85,247,0.06)" stroke="#a855f7" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="550" y="125" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#a855f7" letter-spacing="2">PRIVATE SUBNET</text>
+      <rect x="465" y="135" width="170" height="32" rx="6" fill="rgba(168,85,247,0.12)" stroke="rgba(168,85,247,0.4)" stroke-width="1"/>
+      <text x="550" y="156" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#c084fc">⚙️ AKS Cluster</text>
+      <rect x="465" y="177" width="170" height="32" rx="6" fill="rgba(168,85,247,0.12)" stroke="rgba(168,85,247,0.4)" stroke-width="1"/>
+      <text x="550" y="198" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#c084fc">🗄️ SQL / PostgreSQL</text>
+      <rect x="465" y="219" width="170" height="32" rx="6" fill="rgba(168,85,247,0.12)" stroke="rgba(168,85,247,0.4)" stroke-width="1"/>
+      <text x="550" y="240" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#c084fc">🔒 Key Vault (PE)</text>
+      <rect x="465" y="261" width="170" height="32" rx="6" fill="rgba(168,85,247,0.12)" stroke="rgba(168,85,247,0.4)" stroke-width="1"/>
+      <text x="550" y="282" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#c084fc">🔗 Private Endpoints</text>
+
+      <!-- Arrow VNet → On-Prem -->
+      <line x1="675" y1="190" x2="715" y2="190" stroke="#ffd700" stroke-width="2" marker-end="url(#arr2)" stroke-dasharray="4,3"/>
+      <defs><marker id="arr2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ffd700"/></marker></defs>
+
+      <!-- On-Prem Box -->
+      <rect x="715" y="50" width="155" height="290" rx="14" fill="url(#g2)" stroke="#00ff88" stroke-width="1.5"/>
+      <text x="792" y="75" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#00ff88" letter-spacing="2">ON-PREM</text>
+      <rect x="730" y="90" width="125" height="32" rx="6" fill="rgba(0,255,136,0.15)" stroke="rgba(0,255,136,0.4)" stroke-width="1"/>
+      <text x="792" y="111" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#00ff88">🏛️ Data Center</text>
+      <rect x="730" y="132" width="125" height="32" rx="6" fill="rgba(0,255,136,0.15)" stroke="rgba(0,255,136,0.4)" stroke-width="1"/>
+      <text x="792" y="153" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#00ff88">🔌 ExpressRoute</text>
+      <rect x="730" y="174" width="125" height="32" rx="6" fill="rgba(0,255,136,0.15)" stroke="rgba(0,255,136,0.4)" stroke-width="1"/>
+      <text x="792" y="195" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#00ff88">🔐 VPN Gateway</text>
+      <rect x="730" y="216" width="125" height="32" rx="6" fill="rgba(0,255,136,0.15)" stroke="rgba(0,255,136,0.4)" stroke-width="1"/>
+      <text x="792" y="237" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#00ff88">📡 BGP Routing</text>
+      <rect x="730" y="258" width="125" height="32" rx="6" fill="rgba(0,255,136,0.15)" stroke="rgba(0,255,136,0.4)" stroke-width="1"/>
+      <text x="792" y="279" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#00ff88">🏢 Corp Network</text>
+
+      <!-- Connection label -->
+      <text x="695" y="183" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#ffd700" letter-spacing="1">VPN/ER</text>
+      <text x="213" y="183" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#00d4ff" letter-spacing="1">HTTPS</text>
+
+      <!-- Bottom NSG arrows between subnets -->
+      <line x1="432" y1="200" x2="462" y2="200" stroke="#00d4ff" stroke-width="1.5" stroke-dasharray="3,2"/>
+      <text x="447" y="195" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#7aabcc">NSG</text>
+    </svg>
+  </div>
+
+  <div class="grid3">
+    <div class="card">
+      <span class="card-icon">🌐</span>
+      <div class="card-title">Azure Region</div>
+      <div class="card-sub">Physical datacenter location</div>
+      <div class="card-body">మొత్తం Azure resources ఒక Region లో deploy అవుతాయి. Example: East US, West Europe, Central India. Banking లో డేటా sovereignty కోసం region selection చాలా important.</div>
+    </div>
+    <div class="card">
+      <span class="card-icon">🏗️</span>
+      <div class="card-title">Resource Group</div>
+      <div class="card-sub">Logical container</div>
+      <div class="card-body">Related resources కి ఒక logical container. ఒక project లేదా environment అన్ని resources ఒక RG లో group చేయవచ్చు. Access control, billing, lifecycle management కోసం వాడతారు.</div>
+    </div>
+    <div class="card">
+      <span class="card-icon">📡</span>
+      <div class="card-title">Availability Zones</div>
+      <div class="card-sub">99.99% SLA</div>
+      <div class="card-body">ఒక region లో 3 physically separated datacenters. Banking లో 99.99% uptime కావాలంటే resources zones అన్నింటిలో spread చేయాలి — Zone Redundant setup.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 2 — VIRTUAL NETWORK
+═══════════════════════════════════════════════ -->
+<section class="section" id="vnet">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <h2 class="section-title">Virtual Network (VNet) — Deep Dive</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="topic">
+    <div class="topic-head">
+      <span class="topic-icon">🌐</span>
+      <span class="topic-name">VNet అంటే ఏమిటి?</span>
+      <span class="topic-level level-basic">BEGINNER</span>
+    </div>
+    <div class="topic-body">
+      <p style="color:var(--text2); margin-bottom:16px;">VNet అనేది Azure లో మీ own private network. Real world లో మీ home/office network లాంటిది. మీరే IP address range define చేస్తారు, traffic ఎలా flow అవ్వాలో control చేస్తారు.</p>
+      <div class="grid2">
+        <div>
+          <p class="code-label">VNet Key Properties</p>
+          <div class="code-block"><span class="kw">VNet Properties:</span>
+  <span class="prop">Address Space</span>  : <span class="str">10.0.0.0/8</span> (16M IPs)
+  <span class="prop">Region</span>        : <span class="str">East US 2</span>
+  <span class="prop">Subnets</span>       : Multiple, non-overlapping
+  <span class="prop">DNS Servers</span>   : Custom or Azure default
+  <span class="prop">Peering</span>       : Cross-VNet communication
+  <span class="prop">Service Endpoints</span>: PaaS access control
+  <span class="prop">DDoS Protection</span>: Standard / Basic</div>
+        </div>
+        <div>
+          <p class="code-label">Banking Production VNet Design</p>
+          <div class="code-block"><span class="cmt"># Banking Grade — Hub VNet</span>
+<span class="var">hub_vnet</span>: <span class="str">10.0.0.0/16</span>
+  <span class="fn">subnet_firewall</span>  : <span class="str">10.0.0.0/26</span>
+  <span class="fn">subnet_bastion</span>   : <span class="str">10.0.1.0/27</span>
+  <span class="fn">subnet_gateway</span>   : <span class="str">10.0.2.0/27</span>
+  <span class="fn">subnet_management</span>: <span class="str">10.0.3.0/24</span>
+
+<span class="cmt"># Spoke VNet — Banking App</span>
+<span class="var">spoke_banking</span>: <span class="str">10.1.0.0/16</span>
+  <span class="fn">subnet_app</span>    : <span class="str">10.1.1.0/24</span>
+  <span class="fn">subnet_aks</span>    : <span class="str">10.1.2.0/22</span>
+  <span class="fn">subnet_db</span>     : <span class="str">10.1.6.0/24</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3D Hub-Spoke Diagram -->
+  <div class="diagram-3d">
+    <svg viewBox="0 0 860 460" width="860" height="460" style="max-width:100%">
+      <defs>
+        <radialGradient id="hubgrad" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#00d4ff" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="#0088cc" stop-opacity="0.05"/>
+        </radialGradient>
+        <radialGradient id="spokegrad" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#a855f7" stop-opacity="0.25"/>
+          <stop offset="100%" stop-color="#7c3aed" stop-opacity="0.03"/>
+        </radialGradient>
+      </defs>
+
+      <text x="430" y="26" text-anchor="middle" font-family="Space Mono" font-size="13" fill="#7aabcc" letter-spacing="3">HUB-SPOKE TOPOLOGY — BANKING GRADE</text>
+
+      <!-- Hub -->
+      <circle cx="430" cy="230" r="90" fill="url(#hubgrad)" stroke="#00d4ff" stroke-width="2"/>
+      <text x="430" y="210" text-anchor="middle" font-family="Space Mono" font-size="11" fill="#00d4ff" letter-spacing="2">HUB VNet</text>
+      <text x="430" y="228" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#7aabcc">10.0.0.0/16</text>
+      <text x="430" y="245" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#00ff88">🔥 Firewall</text>
+      <text x="430" y="262" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#7aabcc">🔐 Bastion · VPN GW</text>
+
+      <!-- Spoke 1 — Banking -->
+      <circle cx="170" cy="130" r="72" fill="url(#spokegrad)" stroke="#a855f7" stroke-width="1.5"/>
+      <text x="170" y="110" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#a855f7" letter-spacing="2">BANKING APP</text>
+      <text x="170" y="128" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#c084fc">10.1.0.0/16</text>
+      <text x="170" y="148" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#c084fc">AKS + API Layer</text>
+      <line x1="240" y1="162" x2="345" y2="192" stroke="#a855f7" stroke-width="1.5" stroke-dasharray="5,3"/>
+
+      <!-- Spoke 2 — Data Analytics -->
+      <circle cx="690" cy="130" r="72" fill="rgba(0,255,136,0.08)" stroke="#00ff88" stroke-width="1.5"/>
+      <text x="690" y="110" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#00ff88" letter-spacing="2">DATA ANALYTICS</text>
+      <text x="690" y="128" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#00ff88">10.2.0.0/16</text>
+      <text x="690" y="148" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#00ff88">Databricks + Synapse</text>
+      <line x1="620" y1="162" x2="515" y2="192" stroke="#00ff88" stroke-width="1.5" stroke-dasharray="5,3"/>
+
+      <!-- Spoke 3 — Payments -->
+      <circle cx="170" cy="340" r="72" fill="rgba(255,215,0,0.07)" stroke="#ffd700" stroke-width="1.5"/>
+      <text x="170" y="320" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#ffd700" letter-spacing="2">PAYMENTS</text>
+      <text x="170" y="338" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#ffd700">10.3.0.0/16</text>
+      <text x="170" y="358" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#ffd700">PCI-DSS Isolated</text>
+      <line x1="240" y1="308" x2="345" y2="268" stroke="#ffd700" stroke-width="1.5" stroke-dasharray="5,3"/>
+
+      <!-- Spoke 4 — DR -->
+      <circle cx="690" cy="340" r="72" fill="rgba(255,107,53,0.07)" stroke="#ff6b35" stroke-width="1.5"/>
+      <text x="690" y="320" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#ff6b35" letter-spacing="2">DR / BACKUP</text>
+      <text x="690" y="338" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#ff6b35">10.4.0.0/16</text>
+      <text x="690" y="358" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#ff6b35">West Europe Region</text>
+      <line x1="620" y1="308" x2="515" y2="268" stroke="#ff6b35" stroke-width="1.5" stroke-dasharray="5,3"/>
+
+      <!-- On-Prem -->
+      <rect x="355" y="390" width="150" height="50" rx="8" fill="rgba(255,215,0,0.08)" stroke="#ffd700" stroke-width="1.5"/>
+      <text x="430" y="413" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#ffd700" letter-spacing="2">ON-PREMISES</text>
+      <text x="430" y="430" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#ffd700">ExpressRoute / VPN</text>
+      <line x1="430" y1="390" x2="430" y2="322" stroke="#ffd700" stroke-width="2" stroke-dasharray="4,3"/>
+
+      <!-- Labels on connections -->
+      <text x="275" y="173" font-family="Space Mono" font-size="8" fill="#c084fc">PEER</text>
+      <text x="560" y="173" font-family="Space Mono" font-size="8" fill="#00ff88">PEER</text>
+      <text x="275" y="295" font-family="Space Mono" font-size="8" fill="#ffd700">PEER</text>
+      <text x="560" y="295" font-family="Space Mono" font-size="8" fill="#ff6b35">PEER</text>
+    </svg>
+  </div>
+
+  <div class="callout callout-bank">
+    <span class="callout-icon">🏦</span>
+    <div class="callout-text">
+      <strong>Banking Best Practice: Hub-Spoke Topology</strong>
+      ప్రతి workload (Banking, Payments, Analytics, DR) separate Spoke VNet లో isolate చేయాలి. Hub VNet లో Firewall, Bastion, VPN/ExpressRoute centralize చేయాలి. ఇది PCI-DSS, SOC2 compliance కోసం mandatory.
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 3 — SUBNETS
+═══════════════════════════════════════════════ -->
+<section class="section" id="subnets">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <h2 class="section-title">Subnets — IP Design & Segmentation</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="grid2">
+    <div class="topic">
+      <div class="topic-head">
+        <span class="topic-icon">🧩</span>
+        <span class="topic-name">Subnet అంటే ఏమిటి?</span>
+        <span class="topic-level level-basic">BEGINNER</span>
+      </div>
+      <div class="topic-body">
+        <p style="color:var(--text2); margin-bottom:12px;">VNet ని smaller segments గా divide చేస్తాం. ఒక building లో floors లాంటివి. ప్రతి subnet కి separate security rules apply చేయవచ్చు.</p>
+        <div class="code-block"><span class="cmt"># Subnet CIDR Planning</span>
+<span class="kw">Rule</span>: <span class="str">Azure reserves first 4 + last 1 IPs</span>
+
+<span class="prop">/28</span> = 16 IPs  → 11 usable  <span class="cmt">(small)</span>
+<span class="prop">/27</span> = 32 IPs  → 27 usable  <span class="cmt">(medium)</span>
+<span class="prop">/24</span> = 256 IPs → 251 usable <span class="cmt">(large)</span>
+<span class="prop">/22</span> = 1024 IPs→ 1019 usable<span class="cmt">(AKS)</span>
+<span class="prop">/16</span> = 65536 IPs           <span class="cmt">(VNet)</span></div>
+      </div>
+    </div>
+    <div class="topic">
+      <div class="topic-head">
+        <span class="topic-icon">🏦</span>
+        <span class="topic-name">Banking Grade Subnet Design</span>
+        <span class="topic-level level-adv">ADVANCED</span>
+      </div>
+      <div class="topic-body">
+        <div class="code-block"><span class="cmt"># Production Banking Subnets</span>
+<span class="fn">AzureFirewallSubnet</span>  <span class="str">10.0.0.0/26</span>
+<span class="fn">AzureBastionSubnet</span>   <span class="str">10.0.1.0/27</span>
+<span class="fn">GatewaySubnet</span>         <span class="str">10.0.2.0/27</span>
+<span class="fn">AppGatewaySubnet</span>      <span class="str">10.0.3.0/24</span>
+<span class="fn">snet-aks-system</span>       <span class="str">10.1.0.0/24</span>
+<span class="fn">snet-aks-user</span>          <span class="str">10.1.4.0/22</span>
+<span class="fn">snet-apim</span>             <span class="str">10.1.8.0/27</span>
+<span class="fn">snet-database</span>         <span class="str">10.1.9.0/24</span>
+<span class="fn">snet-privateendpoints</span> <span class="str">10.1.10.0/24</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-warn">
+    <span class="callout-icon">⚠️</span>
+    <div class="callout-text">
+      <strong>Important: AzureFirewallSubnet & AzureBastionSubnet</strong>
+      ఈ రెండు subnets కి exact names వాడాలి — Azure automatically identify చేస్తుంది. AzureFirewallSubnet minimum /26 అయి ఉండాలి. GatewaySubnet minimum /27.
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 4 — NSG
+═══════════════════════════════════════════════ -->
+<section class="section" id="nsg">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <h2 class="section-title">Network Security Groups (NSG)</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="callout callout-info">
+    <span class="callout-icon">🛡️</span>
+    <div class="callout-text">
+      <strong>NSG అంటే ఏమిటి?</strong>
+      NSG అనేది Azure లో stateful firewall. Subnet లేదా NIC level లో attach చేయవచ్చు. Inbound + Outbound rules define చేస్తాం — priority based, lower number = higher priority.
+    </div>
+  </div>
+
+  <!-- 3D NSG Flow Diagram -->
+  <div class="diagram-3d">
+    <svg viewBox="0 0 820 280" width="820" height="280" style="max-width:100%">
+      <text x="410" y="24" text-anchor="middle" font-family="Space Mono" font-size="12" fill="#7aabcc" letter-spacing="3">NSG TRAFFIC EVALUATION FLOW</text>
+
+      <!-- Internet -->
+      <rect x="20" y="80" width="110" height="120" rx="10" fill="rgba(255,107,53,0.1)" stroke="#ff6b35" stroke-width="1.5"/>
+      <text x="75" y="108" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#ff6b35">INTERNET</text>
+      <text x="75" y="128" text-anchor="middle" font-size="22">🌐</text>
+      <text x="75" y="155" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#ffa07a">Port 443</text>
+      <text x="75" y="170" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#ffa07a">HTTPS</text>
+
+      <line x1="132" y1="140" x2="170" y2="140" stroke="#00d4ff" stroke-width="2" marker-end="url(#arr)"/>
+
+      <!-- NSG Inbound -->
+      <rect x="172" y="50" width="140" height="180" rx="10" fill="rgba(0,212,255,0.08)" stroke="#00d4ff" stroke-width="1.5"/>
+      <text x="242" y="74" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#00d4ff" letter-spacing="2">NSG INBOUND</text>
+      <rect x="184" y="84" width="116" height="26" rx="5" fill="rgba(0,255,136,0.12)" stroke="rgba(0,255,136,0.4)" stroke-width="1"/>
+      <text x="242" y="102" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#00ff88">100: Allow 443</text>
+      <rect x="184" y="116" width="116" height="26" rx="5" fill="rgba(0,255,136,0.12)" stroke="rgba(0,255,136,0.4)" stroke-width="1"/>
+      <text x="242" y="134" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#00ff88">110: Allow 80</text>
+      <rect x="184" y="148" width="116" height="26" rx="5" fill="rgba(255,68,68,0.12)" stroke="rgba(255,68,68,0.4)" stroke-width="1"/>
+      <text x="242" y="166" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#ff8888">200: Deny 22 pub</text>
+      <rect x="184" y="180" width="116" height="26" rx="5" fill="rgba(255,68,68,0.12)" stroke="rgba(255,68,68,0.4)" stroke-width="1"/>
+      <text x="242" y="198" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#ff8888">65500: Deny All</text>
+
+      <line x1="314" y1="140" x2="352" y2="140" stroke="#00d4ff" stroke-width="2" marker-end="url(#arr)"/>
+
+      <!-- Subnet -->
+      <rect x="354" y="60" width="130" height="160" rx="10" fill="rgba(168,85,247,0.1)" stroke="#a855f7" stroke-width="1.5"/>
+      <text x="419" y="84" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#a855f7" letter-spacing="2">SUBNET</text>
+      <text x="419" y="114" text-anchor="middle" font-size="24">🖥️</text>
+      <text x="419" y="140" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#c084fc">VM / AKS Node</text>
+      <text x="419" y="158" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#c084fc">10.1.1.0/24</text>
+      <text x="419" y="178" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#c084fc">NSG also on NIC</text>
+      <text x="419" y="196" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#7aabcc">← subnet NSG + NIC NSG</text>
+
+      <line x1="486" y1="140" x2="524" y2="140" stroke="#00d4ff" stroke-width="2" marker-end="url(#arr)"/>
+
+      <!-- NSG Outbound -->
+      <rect x="526" y="50" width="140" height="180" rx="10" fill="rgba(0,212,255,0.08)" stroke="#00d4ff" stroke-width="1.5"/>
+      <text x="596" y="74" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#00d4ff" letter-spacing="2">NSG OUTBOUND</text>
+      <rect x="538" y="84" width="116" height="26" rx="5" fill="rgba(0,255,136,0.12)" stroke="rgba(0,255,136,0.4)" stroke-width="1"/>
+      <text x="596" y="102" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#00ff88">100: Allow 443 out</text>
+      <rect x="538" y="116" width="116" height="26" rx="5" fill="rgba(255,68,68,0.12)" stroke="rgba(255,68,68,0.4)" stroke-width="1"/>
+      <text x="596" y="134" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#ff8888">200: Block internet</text>
+      <rect x="538" y="148" width="116" height="26" rx="5" fill="rgba(0,255,136,0.12)" stroke="rgba(0,255,136,0.4)" stroke-width="1"/>
+      <text x="596" y="166" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#00ff88">300: Allow VNet</text>
+      <rect x="538" y="180" width="116" height="26" rx="5" fill="rgba(255,68,68,0.12)" stroke="rgba(255,68,68,0.4)" stroke-width="1"/>
+      <text x="596" y="198" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#ff8888">65500: Deny All</text>
+
+      <line x1="668" y1="140" x2="706" y2="140" stroke="#00d4ff" stroke-width="2" marker-end="url(#arr)"/>
+
+      <!-- Destination -->
+      <rect x="708" y="80" width="100" height="120" rx="10" fill="rgba(0,255,136,0.08)" stroke="#00ff88" stroke-width="1.5"/>
+      <text x="758" y="108" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#00ff88">DEST</text>
+      <text x="758" y="128" text-anchor="middle" font-size="22">🗄️</text>
+      <text x="758" y="155" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#00ff88">Database</text>
+      <text x="758" y="170" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#00ff88">Private</text>
+
+      <!-- Label -->
+      <text x="410" y="256" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#4a7a99" letter-spacing="2">STATEFUL — Return traffic automatically allowed</text>
+    </svg>
+  </div>
+
+  <div class="code-label">Banking NSG Rules — AKS Node Subnet</div>
+  <div class="code-block"><span class="cmt"># NSG: snet-aks-nodes — Banking Grade</span>
+<span class="kw">INBOUND RULES:</span>
+  <span class="prop">Priority 100</span>: <span class="fn">Allow</span>  <span class="str">AzureLoadBalancer</span>  → Any   <span class="str">*</span>     <span class="cmt"># Health probes</span>
+  <span class="prop">Priority 110</span>: <span class="fn">Allow</span>  <span class="str">VirtualNetwork</span>     → Any   <span class="str">*</span>     <span class="cmt"># Pod communication</span>
+  <span class="prop">Priority 120</span>: <span class="fn">Allow</span>  <span class="str">10.0.0.0/26</span>        → Any   <span class="str">443</span>   <span class="cmt"># From Firewall subnet</span>
+  <span class="prop">Priority 200</span>: <span class="fn">Deny</span>   <span class="str">Internet</span>           → Any   <span class="str">*</span>     <span class="cmt"># Block all internet</span>
+  <span class="prop">Priority 65500</span>: <span class="fn">Deny</span>  <span class="str">*</span>                  → Any   <span class="str">*</span>     <span class="cmt"># Default deny all</span>
+
+<span class="kw">OUTBOUND RULES:</span>
+  <span class="prop">Priority 100</span>: <span class="fn">Allow</span>  Any → <span class="str">AzureContainerRegistry</span>  <span class="str">443</span>  <span class="cmt"># Pull images</span>
+  <span class="prop">Priority 110</span>: <span class="fn">Allow</span>  Any → <span class="str">AzureMonitor</span>            <span class="str">443</span>  <span class="cmt"># Telemetry</span>
+  <span class="prop">Priority 120</span>: <span class="fn">Allow</span>  Any → <span class="str">VirtualNetwork</span>          <span class="str">*</span>    <span class="cmt"># Internal</span>
+  <span class="prop">Priority 200</span>: <span class="fn">Deny</span>   Any → <span class="str">Internet</span>                <span class="str">*</span>    <span class="cmt"># Egress lockdown</span></div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 5 — ROUTING (UDR)
+═══════════════════════════════════════════════ -->
+<section class="section" id="routing">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <h2 class="section-title">Routing — UDR & Azure Firewall Forced Tunneling</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <span class="card-icon">🗺️</span>
+      <div class="card-title">User Defined Routes (UDR)</div>
+      <div class="card-sub">Custom routing rules</div>
+      <div class="card-body">Azure default routes ని override చేయడానికి UDR వాడతాం. Banking లో అన్ని internet traffic Azure Firewall ద్వారా force చేయడానికి UDR mandatory.</div>
+      <div class="code-block" style="margin-top:12px"><span class="cmt"># Force All Egress via Firewall</span>
+<span class="prop">Route Name</span>: force-to-firewall
+<span class="prop">Address Prefix</span>: <span class="str">0.0.0.0/0</span>
+<span class="prop">Next Hop Type</span>: <span class="fn">Virtual Appliance</span>
+<span class="prop">Next Hop IP</span>: <span class="num">10.0.0.4</span> <span class="cmt"># Firewall IP</span></div>
+    </div>
+    <div class="card">
+      <span class="card-icon">🔥</span>
+      <div class="card-title">Forced Tunneling</div>
+      <div class="card-sub">All traffic via Firewall</div>
+      <div class="card-body">ప్రతి packet Azure Firewall ద్వారా inspect అవ్వాలి — ఇది banking compliance కోసం essential. UDR + Firewall combination తో East-West మరియు North-South traffic control చేస్తాం.</div>
+      <div class="code-block" style="margin-top:12px"><span class="cmt"># Traffic Flow Banking</span>
+<span class="var">Internet</span> → <span class="fn">AppGW+WAF</span> → <span class="fn">Firewall</span>
+  → <span class="fn">AKS Ingress</span> → <span class="fn">Pods</span>
+  → <span class="fn">Private Endpoints</span> → <span class="fn">DB</span>
+
+<span class="var">AKS Egress</span> → <span class="fn">UDR</span> → <span class="fn">Firewall</span>
+  → <span class="fn">ACR / KeyVault / Monitor</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 6 — DNS
+═══════════════════════════════════════════════ -->
+<section class="section" id="dns">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <h2 class="section-title">DNS — Private DNS Zones & Resolution</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="topic">
+    <div class="topic-head">
+      <span class="topic-icon">🔍</span>
+      <span class="topic-name">Private DNS Zones</span>
+      <span class="topic-level level-mid">INTERMEDIATE</span>
+    </div>
+    <div class="topic-body">
+      <p style="color:var(--text2); margin-bottom:16px;">Private DNS zones అంటే VNet లో internal name resolution. Banking లో Private Endpoints కి private DNS zones mandatory — otherwise traffic public internet వైపు వెళ్ళే risk ఉంటుంది.</p>
+      <div class="grid2">
+        <div>
+          <div class="code-block"><span class="cmt"># Private DNS Zones — Banking</span>
+<span class="fn">privatelink.database.windows.net</span>
+  → SQL Server private endpoints
+
+<span class="fn">privatelink.blob.core.windows.net</span>
+  → Storage Account private access
+
+<span class="fn">privatelink.vaultcore.azure.net</span>
+  → Key Vault private access
+
+<span class="fn">privatelink.azurecr.io</span>
+  → Container Registry private pull
+
+<span class="fn">privatelink.servicebus.windows.net</span>
+  → Service Bus internal only</div>
+        </div>
+        <div>
+          <div class="code-block"><span class="cmt"># DNS Resolution Flow</span>
+<span class="var">AKS Pod</span> queries: <span class="str">mydb.database.windows.net</span>
+  ↓
+<span class="fn">CoreDNS</span> → <span class="fn">Azure DNS (168.63.129.16)</span>
+  ↓
+<span class="fn">Private DNS Zone lookup</span>
+  ↓
+Returns: <span class="num">10.1.10.5</span> <span class="cmt">(Private IP!)</span>
+  ↓
+Traffic stays <span class="str">INSIDE VNet</span> ✅
+<span class="cmt"># No public internet exposure!</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 7 — VNet PEERING
+═══════════════════════════════════════════════ -->
+<section class="section" id="peering">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <h2 class="section-title">VNet Peering & Global Peering</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <span class="card-icon">🔗</span>
+      <div class="card-title">VNet Peering</div>
+      <div class="card-sub">Low latency, high bandwidth</div>
+      <div class="card-body">రెండు VNets ని private Microsoft backbone network ద్వారా connect చేస్తుంది. Public internet ఉపయోగించదు. Latency చాలా తక్కువ — same region లో sub-millisecond.</div>
+      <div class="tags">
+        <span class="tag">Non-transitive</span>
+        <span class="tag">Bidirectional</span>
+        <span class="tag">Low latency</span>
+        <span class="tag">No downtime</span>
+      </div>
+    </div>
+    <div class="card">
+      <span class="card-icon">🌍</span>
+      <div class="card-title">Global VNet Peering</div>
+      <div class="card-sub">Cross-region connectivity</div>
+      <div class="card-body">Different Azure regions మధ్య VNet peering. Banking లో DR (Disaster Recovery) setup కోసం — Primary region East US 2 ↔ Secondary region West Europe. Data replication తక్కువ latency తో.</div>
+      <div class="callout callout-warn" style="margin-top:12px">
+        <span class="callout-icon">⚠️</span>
+        <div class="callout-text" style="font-size:13px">Peering non-transitive! Hub-Spoke లో hub ద్వారా routing కావాలంటే Azure Firewall లేదా NVA కావాలి.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 8 — LOAD BALANCER
+═══════════════════════════════════════════════ -->
+<section class="section" id="lb">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <h2 class="section-title">Load Balancer — Internal & External</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="diagram-3d">
+    <svg viewBox="0 0 820 260" width="820" height="260" style="max-width:100%">
+      <text x="410" y="24" text-anchor="middle" font-family="Space Mono" font-size="12" fill="#7aabcc" letter-spacing="3">AZURE LOAD BALANCER TYPES</text>
+
+      <!-- External LB -->
+      <rect x="30" y="45" width="360" height="195" rx="12" fill="rgba(255,107,53,0.06)" stroke="#ff6b35" stroke-width="1.5"/>
+      <text x="210" y="68" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#ff6b35" letter-spacing="2">EXTERNAL LOAD BALANCER (L4)</text>
+      <text x="210" y="88" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#4a7a99">Public IP → Distributes to Backend Pool</text>
+      <rect x="80" y="100" width="90" height="50" rx="8" fill="rgba(255,107,53,0.12)" stroke="rgba(255,107,53,0.3)" stroke-width="1"/>
+      <text x="125" y="122" text-anchor="middle" font-size="18">🖥️</text>
+      <text x="125" y="140" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#ff6b35">VM-1</text>
+      <rect x="195" y="100" width="90" height="50" rx="8" fill="rgba(255,107,53,0.12)" stroke="rgba(255,107,53,0.3)" stroke-width="1"/>
+      <text x="240" y="122" text-anchor="middle" font-size="18">🖥️</text>
+      <text x="240" y="140" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#ff6b35">VM-2</text>
+      <rect x="310" y="100" width="65" height="50" rx="8" fill="rgba(255,107,53,0.12)" stroke="rgba(255,107,53,0.3)" stroke-width="1"/>
+      <text x="342" y="122" text-anchor="middle" font-size="18">🖥️</text>
+      <text x="342" y="140" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#ff6b35">VM-3</text>
+      <text x="60" y="175" font-family="JetBrains Mono" font-size="10" fill="#7aabcc">⚡ TCP/UDP Layer 4</text>
+      <text x="60" y="192" font-family="JetBrains Mono" font-size="10" fill="#7aabcc">⚡ Health Probes: HTTP/TCP</text>
+      <text x="60" y="209" font-family="JetBrains Mono" font-size="10" fill="#7aabcc">⚡ Session persistence (Source IP)</text>
+      <text x="60" y="226" font-family="JetBrains Mono" font-size="10" fill="#7aabcc">⚡ Availability Zones support</text>
+
+      <!-- Internal LB -->
+      <rect x="420" y="45" width="375" height="195" rx="12" fill="rgba(0,212,255,0.06)" stroke="#00d4ff" stroke-width="1.5"/>
+      <text x="607" y="68" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#00d4ff" letter-spacing="2">INTERNAL LOAD BALANCER (L4)</text>
+      <text x="607" y="88" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#4a7a99">Private IP Only → Internal services</text>
+      <rect x="470" y="100" width="90" height="50" rx="8" fill="rgba(0,212,255,0.12)" stroke="rgba(0,212,255,0.3)" stroke-width="1"/>
+      <text x="515" y="122" text-anchor="middle" font-size="18">⚙️</text>
+      <text x="515" y="140" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#00d4ff">AKS SVC-1</text>
+      <rect x="582" y="100" width="90" height="50" rx="8" fill="rgba(0,212,255,0.12)" stroke="rgba(0,212,255,0.3)" stroke-width="1"/>
+      <text x="627" y="122" text-anchor="middle" font-size="18">⚙️</text>
+      <text x="627" y="140" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#00d4ff">AKS SVC-2</text>
+      <rect x="695" y="100" width="78" height="50" rx="8" fill="rgba(0,212,255,0.12)" stroke="rgba(0,212,255,0.3)" stroke-width="1"/>
+      <text x="734" y="122" text-anchor="middle" font-size="18">⚙️</text>
+      <text x="734" y="140" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#00d4ff">AKS SVC-3</text>
+      <text x="440" y="175" font-family="JetBrains Mono" font-size="10" fill="#7aabcc">⚡ No public IP — banking safe</text>
+      <text x="440" y="192" font-family="JetBrains Mono" font-size="10" fill="#7aabcc">⚡ AKS: annotation = internal</text>
+      <text x="440" y="209" font-family="JetBrains Mono" font-size="10" fill="#7aabcc">⚡ Cross-subnet load balancing</text>
+      <text x="440" y="226" font-family="JetBrains Mono" font-size="10" fill="#7aabcc">⚡ HA Ports for NVA scenarios</text>
+    </svg>
+  </div>
+
+  <div class="code-label">AKS Internal Load Balancer — Kubernetes Annotation</div>
+  <div class="code-block"><span class="cmt"># AKS Service — Internal LB (Banking Grade)</span>
+<span class="kw">apiVersion</span>: v1
+<span class="kw">kind</span>: Service
+<span class="kw">metadata</span>:
+  <span class="prop">name</span>: <span class="str">banking-api-svc</span>
+  <span class="prop">annotations</span>:
+    <span class="fn">service.beta.kubernetes.io/azure-load-balancer-internal</span>: <span class="str">"true"</span>
+    <span class="fn">service.beta.kubernetes.io/azure-load-balancer-internal-subnet</span>: <span class="str">"snet-aks-user"</span>
+<span class="kw">spec</span>:
+  <span class="prop">type</span>: LoadBalancer
+  <span class="prop">selector</span>:
+    <span class="fn">app</span>: banking-api
+  <span class="prop">ports</span>:
+    - <span class="fn">port</span>: <span class="num">443</span>
+      <span class="fn">targetPort</span>: <span class="num">8443</span></div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 9 — APP GATEWAY + WAF
+═══════════════════════════════════════════════ -->
+<section class="section" id="agw">
+  <div class="section-header">
+    <span class="section-num">09</span>
+    <h2 class="section-title">Application Gateway + WAF</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="callout callout-bank">
+    <span class="callout-icon">🏦</span>
+    <div class="callout-text">
+      <strong>Banking Requirement: WAF అవసరం ఎందుకు?</strong>
+      OWASP Top 10 attacks (SQL injection, XSS, etc.) ని block చేయడానికి WAF mandatory. RBI, PCI-DSS guidelines లో WAF deployment required. Application Gateway WAF_v2 ని Standard_v2 కి upgrade చేసి banking grade protection పొందాలి.
+    </div>
+  </div>
+
+  <div class="diagram-3d">
+    <svg viewBox="0 0 820 200" width="820" height="200" style="max-width:100%">
+      <text x="410" y="22" text-anchor="middle" font-family="Space Mono" font-size="11" fill="#7aabcc" letter-spacing="3">APPLICATION GATEWAY + WAF FLOW</text>
+
+      <rect x="20" y="50" width="90" height="120" rx="10" fill="rgba(255,107,53,0.1)" stroke="#ff6b35" stroke-width="1.5"/>
+      <text x="65" y="76" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#ff6b35">CLIENT</text>
+      <text x="65" y="96" text-anchor="middle" font-size="20">👤</text>
+      <text x="65" y="120" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#ffa07a">HTTPS</text>
+      <text x="65" y="138" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#ffa07a">request</text>
+
+      <line x1="112" y1="110" x2="145" y2="110" stroke="#ff6b35" stroke-width="2" marker-end="url(#arr)"/>
+
+      <rect x="148" y="40" width="130" height="140" rx="10" fill="rgba(255,215,0,0.07)" stroke="#ffd700" stroke-width="1.5"/>
+      <text x="213" y="64" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#ffd700" letter-spacing="1">WAF v2</text>
+      <text x="213" y="83" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#ffd700">OWASP 3.2</text>
+      <text x="213" y="100" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#ffd700">Bot Protection</text>
+      <text x="213" y="117" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#ffd700">Custom Rules</text>
+      <text x="213" y="134" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#ffd700">Geo-filter</text>
+      <text x="213" y="153" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#ffd700">Rate Limiting</text>
+      <text x="213" y="170" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#ffd700">DDoS L7</text>
+
+      <line x1="280" y1="110" x2="313" y2="110" stroke="#ffd700" stroke-width="2" marker-end="url(#arr)"/>
+
+      <rect x="316" y="40" width="140" height="140" rx="10" fill="rgba(0,212,255,0.07)" stroke="#00d4ff" stroke-width="1.5"/>
+      <text x="386" y="64" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#00d4ff" letter-spacing="1">APP GATEWAY</text>
+      <text x="386" y="83" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#00d4ff">SSL Termination</text>
+      <text x="386" y="100" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#00d4ff">URL Routing</text>
+      <text x="386" y="117" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#00d4ff">Cookie Affinity</text>
+      <text x="386" y="134" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#00d4ff">Health Probes</text>
+      <text x="386" y="153" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#00d4ff">Autoscale 0-125</text>
+      <text x="386" y="170" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#00d4ff">Zone Redundant</text>
+
+      <line x1="458" y1="110" x2="491" y2="110" stroke="#00d4ff" stroke-width="2" marker-end="url(#arr)"/>
+
+      <rect x="494" y="50" width="140" height="120" rx="10" fill="rgba(168,85,247,0.08)" stroke="#a855f7" stroke-width="1.5"/>
+      <text x="564" y="74" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#a855f7" letter-spacing="1">AKS INGRESS</text>
+      <text x="564" y="94" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#c084fc">AGIC Controller</text>
+      <text x="564" y="111" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#c084fc">mTLS to pods</text>
+      <text x="564" y="128" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#c084fc">IngressClass: azure</text>
+      <text x="564" y="148" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#c084fc">Banking API pods</text>
+
+      <line x1="636" y1="110" x2="669" y2="110" stroke="#a855f7" stroke-width="2" marker-end="url(#arr)"/>
+
+      <rect x="672" y="50" width="128" height="120" rx="10" fill="rgba(0,255,136,0.07)" stroke="#00ff88" stroke-width="1.5"/>
+      <text x="736" y="74" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#00ff88" letter-spacing="1">BACKEND</text>
+      <text x="736" y="94" text-anchor="middle" font-size="18">⚙️</text>
+      <text x="736" y="114" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#00ff88">Banking API</text>
+      <text x="736" y="131" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#00ff88">Payment SVC</text>
+      <text x="736" y="148" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#00ff88">Analytics API</text>
+    </svg>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 10 — AZURE FIREWALL
+═══════════════════════════════════════════════ -->
+<section class="section" id="firewall">
+  <div class="section-header">
+    <span class="section-num">10</span>
+    <h2 class="section-title">Azure Firewall — Premium (Banking Grade)</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="grid2">
+    <div>
+      <div class="callout callout-bank">
+        <span class="callout-icon">🔥</span>
+        <div class="callout-text">
+          <strong>Azure Firewall Premium — Banking Mandatory Features</strong>
+          TLS inspection, IDPS (Intrusion Detection Prevention), URL filtering, threat intelligence. Banking లో <strong>Premium SKU</strong> మాత్రమే use చేయాలి — Standard SKU insufficient for PCI-DSS.
+        </div>
+      </div>
+      <div class="code-block"><span class="cmt"># Azure Firewall Premium — Key Rules</span>
+<span class="kw">Application Rules</span> (FQDN based):
+  <span class="fn">Allow</span> <span class="str">*.microsoft.com</span>    port <span class="num">443</span>
+  <span class="fn">Allow</span> <span class="str">*.azure.com</span>       port <span class="num">443</span>
+  <span class="fn">Allow</span> <span class="str">*.ubuntu.com</span>      port <span class="num">80,443</span>
+  <span class="fn">Deny</span>  <span class="str">*</span>               port <span class="num">*</span>
+
+<span class="kw">Network Rules</span> (IP/Port based):
+  <span class="fn">Allow</span> <span class="num">10.1.0.0/16</span> → <span class="num">10.2.0.0/16</span> <span class="num">*</span>
+  <span class="fn">Deny</span>  <span class="num">*</span>           → <span class="str">Internet</span>      <span class="num">*</span>
+
+<span class="kw">IDPS Mode</span>: Alert and Deny
+<span class="kw">TLS Inspection</span>: Enabled (own CA cert)
+<span class="kw">Threat Intel</span>: Alert and Deny</div>
+    </div>
+    <div>
+      <div class="layer-stack">
+        <div class="layer layer-5">
+          <span class="layer-icon">🛡️</span>
+          <span class="layer-name">Threat Intelligence</span>
+          <span class="layer-detail">Microsoft threat feeds — auto block malicious IPs/domains</span>
+        </div>
+        <div class="layer layer-1">
+          <span class="layer-icon">🔬</span>
+          <span class="layer-name">IDPS — Intrusion Detection</span>
+          <span class="layer-detail">Signature-based attack detection, 58,000+ signatures</span>
+        </div>
+        <div class="layer layer-2">
+          <span class="layer-icon">🔒</span>
+          <span class="layer-name">TLS Inspection</span>
+          <span class="layer-detail">Decrypt → inspect → re-encrypt HTTPS traffic</span>
+        </div>
+        <div class="layer layer-3">
+          <span class="layer-icon">🌐</span>
+          <span class="layer-name">URL Filtering</span>
+          <span class="layer-detail">Category-based web filtering (gambling, social, malware)</span>
+        </div>
+        <div class="layer layer-4">
+          <span class="layer-icon">📊</span>
+          <span class="layer-name">Policy + Firewall Manager</span>
+          <span class="layer-detail">Centralized policy across all Hub-Spoke firewalls</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 11 — VPN / EXPRESSROUTE
+═══════════════════════════════════════════════ -->
+<section class="section" id="vpn">
+  <div class="section-header">
+    <span class="section-num">11</span>
+    <h2 class="section-title">VPN Gateway & ExpressRoute</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <span class="card-icon">🔐</span>
+      <div class="card-title">VPN Gateway</div>
+      <div class="card-sub">IPsec/IKE encrypted tunnel</div>
+      <div class="card-body">Public internet ద్వారా encrypted connection. Branch offices, remote workers కోసం. Banking లో critical data కి ExpressRoute prefer చేస్తారు.</div>
+      <div class="code-block" style="margin-top:12px"><span class="prop">SKU</span>: VpnGw2AZ  <span class="cmt">(Zone redundant)</span>
+<span class="prop">Type</span>: Route-based
+<span class="prop">Throughput</span>: 1.25 Gbps
+<span class="prop">Connections</span>: S2S + P2S
+<span class="prop">IKE</span>: v2 (AES-256, SHA-256)</div>
+    </div>
+    <div class="card">
+      <span class="card-icon">⚡</span>
+      <div class="card-title">ExpressRoute</div>
+      <div class="card-sub">Private dedicated connection</div>
+      <div class="card-body">Internet bypass — dedicated fiber connection. Banking లో on-premises data center to Azure. Latency 1-5ms, bandwidth upto 100Gbps. No internet exposure — regulatory compliance perfect.</div>
+      <div class="code-block" style="margin-top:12px"><span class="prop">Circuit SKU</span>: Premium
+<span class="prop">Bandwidth</span>: 1 Gbps - 100 Gbps
+<span class="prop">Peering</span>: Private + Microsoft
+<span class="prop">Redundancy</span>: Dual circuits (BGP)
+<span class="prop">SLA</span>: 99.95%</div>
+    </div>
+  </div>
+
+  <div class="callout callout-bank">
+    <span class="callout-icon">🏦</span>
+    <div class="callout-text">
+      <strong>Banking Recommendation: ExpressRoute + VPN (Active-Active)</strong>
+      Primary: ExpressRoute (1Gbps). Failover: VPN Gateway. ఇలా చేస్తే connectivity never goes down. RBI mandates dedicated connectivity for core banking systems.
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 12 — PRIVATE LINK
+═══════════════════════════════════════════════ -->
+<section class="section" id="privatelink">
+  <div class="section-header">
+    <span class="section-num">12</span>
+    <h2 class="section-title">Private Link & Private Endpoints</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="diagram-3d">
+    <svg viewBox="0 0 820 220" width="820" height="220" style="max-width:100%">
+      <text x="410" y="22" text-anchor="middle" font-family="Space Mono" font-size="11" fill="#7aabcc" letter-spacing="3">PRIVATE ENDPOINT vs PUBLIC — BANKING</text>
+
+      <!-- Public path (red - cross) -->
+      <rect x="20" y="45" width="180" height="80" rx="10" fill="rgba(255,68,68,0.07)" stroke="rgba(255,68,68,0.4)" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <text x="110" y="68" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#ff4444" letter-spacing="1">❌ WITHOUT PRIVATE EP</text>
+      <text x="110" y="88" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#ff8888">App → Public Internet →</text>
+      <text x="110" y="106" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#ff8888">SQL Server public endpoint</text>
+      <text x="110" y="124" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#ff4444">DANGEROUS for banking!</text>
+
+      <!-- Private path (green - check) -->
+      <rect x="20" y="140" width="380" height="68" rx="10" fill="rgba(0,255,136,0.07)" stroke="rgba(0,255,136,0.4)" stroke-width="1.5"/>
+      <text x="210" y="163" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#00ff88" letter-spacing="1">✅ WITH PRIVATE ENDPOINT</text>
+      <text x="210" y="183" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#00ff88">App → Private IP (10.1.10.5) → Private Link → SQL Server</text>
+      <text x="210" y="200" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#00ff88">Traffic NEVER leaves Azure backbone ✓ Banking compliant!</text>
+
+      <!-- Private Endpoint Detail -->
+      <rect x="430" y="40" width="360" height="160" rx="12" fill="rgba(0,212,255,0.06)" stroke="#00d4ff" stroke-width="1.5"/>
+      <text x="610" y="62" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#00d4ff" letter-spacing="2">PRIVATE ENDPOINT COMPONENTS</text>
+      <text x="445" y="85" font-family="JetBrains Mono" font-size="10" fill="#7aabcc">🔌 NIC with Private IP in your subnet</text>
+      <text x="445" y="105" font-family="JetBrains Mono" font-size="10" fill="#7aabcc">🔗 Links to Azure PaaS service</text>
+      <text x="445" y="125" font-family="JetBrains Mono" font-size="10" fill="#7aabcc">📋 Private DNS Zone auto-registration</text>
+      <text x="445" y="145" font-family="JetBrains Mono" font-size="10" fill="#7aabcc">🚫 Disables public endpoint access</text>
+      <text x="445" y="165" font-family="JetBrains Mono" font-size="10" fill="#7aabcc">✅ Works: SQL, Storage, KeyVault, ACR</text>
+      <text x="445" y="185" font-family="JetBrains Mono" font-size="10" fill="#7aabcc">✅ ServiceBus, CosmosDB, EventHub...</text>
+    </svg>
+  </div>
+
+  <div class="code-label">Terraform: Private Endpoint for SQL Server (Banking)</div>
+  <div class="code-block"><span class="cmt"># Private Endpoint — SQL Server</span>
+<span class="kw">resource</span> <span class="str">"azurerm_private_endpoint"</span> <span class="str">"sql_pe"</span> {
+  <span class="prop">name</span>                = <span class="str">"pe-sql-banking-prod"</span>
+  <span class="prop">location</span>            = <span class="var">azurerm_resource_group.rg.location</span>
+  <span class="prop">resource_group_name</span> = <span class="var">azurerm_resource_group.rg.name</span>
+  <span class="prop">subnet_id</span>           = <span class="var">azurerm_subnet.private_endpoints.id</span>
+
+  <span class="prop">private_service_connection</span> {
+    <span class="fn">name</span>                           = <span class="str">"psc-sql-banking"</span>
+    <span class="fn">private_connection_resource_id</span> = <span class="var">azurerm_mssql_server.banking.id</span>
+    <span class="fn">is_manual_connection</span>           = <span class="kw">false</span>
+    <span class="fn">subresource_names</span>              = [<span class="str">"sqlServer"</span>]
+  }
+
+  <span class="prop">private_dns_zone_group</span> {
+    <span class="fn">name</span>                 = <span class="str">"dns-zone-group-sql"</span>
+    <span class="fn">private_dns_zone_ids</span> = [<span class="var">azurerm_private_dns_zone.sql.id</span>]
+  }
+}</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 13 — AKS NETWORKING (Deep Dive)
+═══════════════════════════════════════════════ -->
+<section class="section" id="aks">
+  <div class="section-header">
+    <span class="section-num">13</span>
+    <h2 class="section-title">AKS Networking — Production Deep Dive</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="diagram-3d">
+    <svg viewBox="0 0 860 480" width="860" height="480" style="max-width:100%">
+      <defs>
+        <linearGradient id="aksg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#a855f7" stop-opacity="0.2"/>
+          <stop offset="100%" stop-color="#7c3aed" stop-opacity="0.05"/>
+        </linearGradient>
+      </defs>
+
+      <text x="430" y="26" text-anchor="middle" font-family="Space Mono" font-size="13" fill="#7aabcc" letter-spacing="3">AKS NETWORKING ARCHITECTURE — BANKING GRADE</text>
+
+      <!-- Outer VNet -->
+      <rect x="15" y="40" width="830" height="430" rx="16" fill="rgba(0,212,255,0.03)" stroke="#0e3058" stroke-width="1.5"/>
+      <text x="430" y="62" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#4a7a99" letter-spacing="2">VNet: 10.1.0.0/16</text>
+
+      <!-- System Nodepool Subnet -->
+      <rect x="30" y="72" width="200" height="378" rx="12" fill="rgba(0,212,255,0.05)" stroke="#00d4ff" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="130" y="94" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#00d4ff" letter-spacing="1">SYSTEM NODEPOOL</text>
+      <text x="130" y="110" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#4a7a99">10.1.0.0/24</text>
+
+      <!-- System nodes -->
+      <rect x="46" y="122" width="168" height="50" rx="8" fill="rgba(0,212,255,0.1)" stroke="rgba(0,212,255,0.4)" stroke-width="1"/>
+      <text x="130" y="143" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#00d4ff">🖥️ Node-1  10.1.0.4</text>
+      <text x="130" y="160" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#7aabcc">CoreDNS · kube-proxy · CNI</text>
+
+      <rect x="46" y="184" width="168" height="50" rx="8" fill="rgba(0,212,255,0.1)" stroke="rgba(0,212,255,0.4)" stroke-width="1"/>
+      <text x="130" y="205" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#00d4ff">🖥️ Node-2  10.1.0.5</text>
+      <text x="130" y="222" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#7aabcc">kube-apiserver · metrics-server</text>
+
+      <rect x="46" y="246" width="168" height="50" rx="8" fill="rgba(0,212,255,0.1)" stroke="rgba(0,212,255,0.4)" stroke-width="1"/>
+      <text x="130" y="267" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#00d4ff">🖥️ Node-3  10.1.0.6</text>
+      <text x="130" y="284" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#7aabcc">Azure CNI · Calico</text>
+
+      <text x="130" y="330" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#4a7a99">Pod CIDR: 10.1.0.0/24</text>
+      <text x="130" y="348" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#4a7a99">Each node: /24 pod subnet</text>
+      <text x="130" y="366" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#4a7a99">Azure CNI: pods = real IPs</text>
+      <text x="130" y="384" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#00ff88">✓ Banking: Private cluster</text>
+      <text x="130" y="402" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#00ff88">✓ API server private only</text>
+      <text x="130" y="420" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#00ff88">✓ OIDC + Workload Identity</text>
+
+      <!-- User Nodepool Subnet -->
+      <rect x="250" y="72" width="340" height="378" rx="12" fill="rgba(168,85,247,0.04)" stroke="#a855f7" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="420" y="94" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#a855f7" letter-spacing="1">USER NODEPOOL — BANKING WORKLOADS</text>
+      <text x="420" y="110" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#4a7a99">10.1.4.0/22</text>
+
+      <!-- Pods on user nodes -->
+      <rect x="265" y="122" width="148" height="60" rx="8" fill="rgba(168,85,247,0.1)" stroke="rgba(168,85,247,0.4)" stroke-width="1"/>
+      <text x="339" y="143" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#c084fc">Banking API Pods</text>
+      <text x="339" y="158" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#c084fc">10.1.4.4 - 10.1.4.10</text>
+      <text x="339" y="173" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#7aabcc">Workload Identity Auth</text>
+
+      <rect x="425" y="122" width="148" height="60" rx="8" fill="rgba(168,85,247,0.1)" stroke="rgba(168,85,247,0.4)" stroke-width="1"/>
+      <text x="499" y="143" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#c084fc">Payment Pods</text>
+      <text x="499" y="158" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#c084fc">10.1.5.4 - 10.1.5.10</text>
+      <text x="499" y="173" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#ffd700">PCI-DSS namespace</text>
+
+      <rect x="265" y="200" width="148" height="60" rx="8" fill="rgba(0,255,136,0.08)" stroke="rgba(0,255,136,0.4)" stroke-width="1"/>
+      <text x="339" y="221" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#00ff88">Analytics Pods</text>
+      <text x="339" y="236" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#00ff88">10.1.6.4 - 10.1.6.15</text>
+      <text x="339" y="251" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#7aabcc">Databricks integration</text>
+
+      <rect x="425" y="200" width="148" height="60" rx="8" fill="rgba(255,215,0,0.07)" stroke="rgba(255,215,0,0.4)" stroke-width="1"/>
+      <text x="499" y="221" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#ffd700">Monitoring Pods</text>
+      <text x="499" y="236" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#ffd700">10.1.7.4 - 10.1.7.8</text>
+      <text x="499" y="251" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#7aabcc">Prometheus + Grafana</text>
+
+      <!-- Calico NetPol -->
+      <rect x="265" y="278" width="310" height="60" rx="8" fill="rgba(255,107,53,0.08)" stroke="rgba(255,107,53,0.4)" stroke-width="1"/>
+      <text x="420" y="300" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#ff6b35" letter-spacing="1">CALICO NETWORK POLICIES</text>
+      <text x="420" y="318" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#ffa07a">Deny All → Allow only defined paths</text>
+      <text x="420" y="335" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#ffa07a">East-West microsegmentation between namespaces</text>
+
+      <!-- Ingress + Services -->
+      <rect x="265" y="354" width="148" height="78" rx="8" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.4)" stroke-width="1"/>
+      <text x="339" y="375" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#00d4ff">INGRESS</text>
+      <text x="339" y="393" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#00d4ff">AGIC → App Gateway</text>
+      <text x="339" y="410" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#7aabcc">nginx (internal only)</text>
+      <text x="339" y="426" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#7aabcc">mTLS enforcement</text>
+
+      <rect x="425" y="354" width="148" height="78" rx="8" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.4)" stroke-width="1"/>
+      <text x="499" y="375" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#00d4ff">EGRESS</text>
+      <text x="499" y="393" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#00d4ff">UDR → Azure Firewall</text>
+      <text x="499" y="410" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#7aabcc">All outbound inspected</text>
+      <text x="499" y="426" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#7aabcc">FQDN based allow list</text>
+
+      <!-- Private Endpoints Subnet -->
+      <rect x="610" y="72" width="220" height="378" rx="12" fill="rgba(0,255,136,0.04)" stroke="#00ff88" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="720" y="94" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#00ff88" letter-spacing="1">PRIVATE ENDPOINTS</text>
+      <text x="720" y="110" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#4a7a99">10.1.10.0/24</text>
+
+      <rect x="625" y="122" width="190" height="42" rx="7" fill="rgba(0,255,136,0.1)" stroke="rgba(0,255,136,0.3)" stroke-width="1"/>
+      <text x="720" y="140" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#00ff88">🗄️ SQL Server  .11</text>
+      <text x="720" y="156" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#7aabcc">10.1.10.11</text>
+
+      <rect x="625" y="174" width="190" height="42" rx="7" fill="rgba(0,255,136,0.1)" stroke="rgba(0,255,136,0.3)" stroke-width="1"/>
+      <text x="720" y="192" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#00ff88">🔑 Key Vault  .12</text>
+      <text x="720" y="208" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#7aabcc">10.1.10.12</text>
+
+      <rect x="625" y="226" width="190" height="42" rx="7" fill="rgba(0,255,136,0.1)" stroke="rgba(0,255,136,0.3)" stroke-width="1"/>
+      <text x="720" y="244" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#00ff88">📦 Storage  .13</text>
+      <text x="720" y="260" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#7aabcc">10.1.10.13</text>
+
+      <rect x="625" y="278" width="190" height="42" rx="7" fill="rgba(0,255,136,0.1)" stroke="rgba(0,255,136,0.3)" stroke-width="1"/>
+      <text x="720" y="296" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#00ff88">🐋 ACR  .14</text>
+      <text x="720" y="312" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#7aabcc">10.1.10.14</text>
+
+      <rect x="625" y="330" width="190" height="42" rx="7" fill="rgba(0,255,136,0.1)" stroke="rgba(0,255,136,0.3)" stroke-width="1"/>
+      <text x="720" y="348" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#00ff88">📨 ServiceBus  .15</text>
+      <text x="720" y="364" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#7aabcc">10.1.10.15</text>
+
+      <rect x="625" y="382" width="190" height="56" rx="7" fill="rgba(255,215,0,0.07)" stroke="rgba(255,215,0,0.3)" stroke-width="1"/>
+      <text x="720" y="403" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#ffd700" letter-spacing="1">PRIVATE DNS ZONES</text>
+      <text x="720" y="420" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#ffd700">auto-registers all PE IPs</text>
+      <text x="720" y="434" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7aabcc">CoreDNS → Azure DNS → Zone</text>
+    </svg>
+  </div>
+
+  <div class="grid2" style="margin-top:24px">
+    <div>
+      <div class="code-label">AKS Cluster — Private, Azure CNI, Calico</div>
+      <div class="code-block"><span class="cmt"># AKS Private Cluster — Banking Config</span>
+<span class="kw">resource</span> <span class="str">"azurerm_kubernetes_cluster"</span> <span class="str">"aks"</span> {
+  <span class="prop">name</span>                = <span class="str">"aks-banking-prod"</span>
+  <span class="prop">location</span>            = <span class="var">var.location</span>
+  <span class="prop">resource_group_name</span> = <span class="var">var.rg_name</span>
+  <span class="prop">dns_prefix</span>          = <span class="str">"banking-prod"</span>
+  <span class="prop">private_cluster_enabled</span> = <span class="kw">true</span>
+  <span class="prop">private_dns_zone_id</span> = <span class="var">azurerm_private_dns_zone.aks.id</span>
+  <span class="prop">sku_tier</span>            = <span class="str">"Standard"</span>  <span class="cmt"># SLA-backed</span>
+
+  <span class="prop">network_profile</span> {
+    <span class="fn">network_plugin</span>     = <span class="str">"azure"</span>  <span class="cmt"># Azure CNI</span>
+    <span class="fn">network_policy</span>     = <span class="str">"calico"</span> <span class="cmt"># Calico</span>
+    <span class="fn">service_cidr</span>       = <span class="str">"172.16.0.0/16"</span>
+    <span class="fn">dns_service_ip</span>     = <span class="str">"172.16.0.10"</span>
+    <span class="fn">outbound_type</span>      = <span class="str">"userDefinedRouting"</span>
+    <span class="fn">load_balancer_sku</span>  = <span class="str">"standard"</span>
+  }
+
+  <span class="prop">default_node_pool</span> {
+    <span class="fn">name</span>           = <span class="str">"system"</span>
+    <span class="fn">node_count</span>     = <span class="num">3</span>
+    <span class="fn">vm_size</span>        = <span class="str">"Standard_D4s_v5"</span>
+    <span class="fn">vnet_subnet_id</span> = <span class="var">azurerm_subnet.aks_system.id</span>
+    <span class="fn">zones</span>          = [<span class="str">"1"</span>, <span class="str">"2"</span>, <span class="str">"3"</span>]
+    <span class="fn">os_disk_type</span>   = <span class="str">"Ephemeral"</span>
+  }
+
+  <span class="prop">identity</span> { <span class="fn">type</span> = <span class="str">"UserAssigned"</span> }
+  <span class="prop">workload_identity_enabled</span>         = <span class="kw">true</span>
+  <span class="prop">oidc_issuer_enabled</span>               = <span class="kw">true</span>
+  <span class="prop">azure_policy_enabled</span>              = <span class="kw">true</span>
+  <span class="prop">microsoft_defender { log_analytics_workspace_id = ... }</span>
+}</div>
+    </div>
+    <div>
+      <div class="code-label">Calico NetworkPolicy — Banking Namespace Isolation</div>
+      <div class="code-block"><span class="cmt"># Default Deny All — Banking Namespace</span>
+<span class="kw">apiVersion</span>: networking.k8s.io/v1
+<span class="kw">kind</span>: NetworkPolicy
+<span class="kw">metadata</span>:
+  <span class="prop">name</span>: <span class="str">default-deny-all</span>
+  <span class="prop">namespace</span>: <span class="str">banking</span>
+<span class="kw">spec</span>:
+  <span class="prop">podSelector</span>: {}
+  <span class="prop">policyTypes</span>: [Ingress, Egress]
+
+<span class="cmt">---</span>
+<span class="cmt"># Allow Banking API → Database</span>
+<span class="kw">apiVersion</span>: networking.k8s.io/v1
+<span class="kw">kind</span>: NetworkPolicy
+<span class="kw">metadata</span>:
+  <span class="prop">name</span>: <span class="str">allow-api-to-db</span>
+  <span class="prop">namespace</span>: <span class="str">banking</span>
+<span class="kw">spec</span>:
+  <span class="prop">podSelector</span>:
+    <span class="fn">matchLabels</span>: {<span class="prop">app</span>: <span class="str">banking-api</span>}
+  <span class="prop">egress</span>:
+    - <span class="fn">ports</span>: [{<span class="prop">port</span>: <span class="num">1433</span>, <span class="prop">protocol</span>: <span class="str">TCP</span>}]
+      <span class="fn">to</span>:
+        - <span class="fn">ipBlock</span>:
+            <span class="prop">cidr</span>: <span class="str">10.1.10.11/32</span> <span class="cmt"># SQL PE only</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 14 — BANKING GRADE SECURITY
+═══════════════════════════════════════════════ -->
+<section class="section" id="banking">
+  <div class="section-header">
+    <span class="section-num">14</span>
+    <h2 class="section-title">Banking Grade Security — Zero Trust Architecture</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="banner">
+    <h2>🏦 Zero Trust Principle: "Never Trust, Always Verify"</h2>
+    <p>ప్రతి request authenticate + authorize. Network లో ఉన్నా అయినా trusted కాదు. Identity, device, and context అన్నీ verify చేయబడతాయి.</p>
+  </div>
+
+  <!-- Security Layers -->
+  <div class="layer-stack">
+    <div class="layer layer-1">
+      <span class="layer-icon">👁️</span>
+      <span class="layer-name">LAYER 7: Monitoring & Compliance</span>
+      <span class="layer-detail">Microsoft Sentinel SIEM · Defender for Cloud · Log Analytics · Azure Monitor · DDoS analytics</span>
+    </div>
+    <div class="layer layer-5">
+      <span class="layer-icon">🔑</span>
+      <span class="layer-name">LAYER 6: Identity & Access</span>
+      <span class="layer-detail">Azure AD / Entra ID · MFA · Conditional Access · PIM · Workload Identity (no passwords in AKS)</span>
+    </div>
+    <div class="layer layer-2">
+      <span class="layer-icon">🔒</span>
+      <span class="layer-name">LAYER 5: Data Security</span>
+      <span class="layer-detail">Encryption at rest (AES-256) · TLS 1.3 in transit · Key Vault HSM · Customer Managed Keys</span>
+    </div>
+    <div class="layer layer-3">
+      <span class="layer-icon">🔥</span>
+      <span class="layer-name">LAYER 4: Network Security</span>
+      <span class="layer-detail">Azure Firewall Premium · NSG · DDoS Standard · Private Endpoints · WAF OWASP 3.2</span>
+    </div>
+    <div class="layer layer-4">
+      <span class="layer-icon">🛡️</span>
+      <span class="layer-name">LAYER 3: Workload Security</span>
+      <span class="layer-detail">Defender for Containers · Image scanning · Calico policies · Pod Security Standards · OPA/Gatekeeper</span>
+    </div>
+    <div class="layer layer-1" style="background:rgba(0,212,255,0.05); border-color:rgba(0,212,255,0.3); color:var(--accent)">
+      <span class="layer-icon">🏗️</span>
+      <span class="layer-name">LAYER 2: Infrastructure</span>
+      <span class="layer-detail">Private Cluster · Dedicated nodepools · Hub-Spoke VNet · AZ deployment · CMK disk encryption</span>
+    </div>
+    <div class="layer layer-4">
+      <span class="layer-icon">📋</span>
+      <span class="layer-name">LAYER 1: Governance & Policy</span>
+      <span class="layer-detail">Azure Policy · Blueprints · Defender CSPM · RBAC · Resource Locks · Landing Zones</span>
+    </div>
+  </div>
+
+  <div class="grid2" style="margin-top:24px">
+    <div>
+      <div class="code-label">PCI-DSS / Banking Compliance Checklist</div>
+      <table class="sec-table">
+        <tr><th>Control</th><th>Status</th><th>Azure Service</th></tr>
+        <tr><td>No public endpoints</td><td><span class="badge badge-green">✓ Done</span></td><td>Private Endpoints</td></tr>
+        <tr><td>Encryption in transit</td><td><span class="badge badge-green">✓ Done</span></td><td>TLS 1.3 + Firewall TLS insp.</td></tr>
+        <tr><td>Encryption at rest</td><td><span class="badge badge-green">✓ Done</span></td><td>CMK + Key Vault HSM</td></tr>
+        <tr><td>MFA for all admins</td><td><span class="badge badge-green">✓ Done</span></td><td>Azure AD Conditional Access</td></tr>
+        <tr><td>Network segmentation</td><td><span class="badge badge-green">✓ Done</span></td><td>Hub-Spoke + NSG + Calico</td></tr>
+        <tr><td>Intrusion detection</td><td><span class="badge badge-green">✓ Done</span></td><td>Firewall Premium IDPS</td></tr>
+        <tr><td>Log all events</td><td><span class="badge badge-green">✓ Done</span></td><td>Log Analytics + Sentinel</td></tr>
+        <tr><td>Vulnerability scanning</td><td><span class="badge badge-green">✓ Done</span></td><td>Defender for Containers</td></tr>
+        <tr><td>Privileged access control</td><td><span class="badge badge-green">✓ Done</span></td><td>PIM + JIT Access</td></tr>
+        <tr><td>DDoS protection</td><td><span class="badge badge-green">✓ Done</span></td><td>DDoS Standard Plan</td></tr>
+      </table>
+    </div>
+    <div>
+      <div class="code-label">DDoS Protection — Banking</div>
+      <div class="code-block"><span class="cmt"># DDoS Standard — Protect all Public IPs</span>
+<span class="kw">resource</span> <span class="str">"azurerm_network_ddos_protection_plan"</span> <span class="str">"ddos"</span> {
+  <span class="prop">name</span>                = <span class="str">"ddos-banking-prod"</span>
+  <span class="prop">location</span>            = <span class="var">var.location</span>
+  <span class="prop">resource_group_name</span> = <span class="var">var.rg_name</span>
+}
+
+<span class="cmt"># Enable on VNet</span>
+<span class="kw">resource</span> <span class="str">"azurerm_virtual_network"</span> <span class="str">"hub"</span> {
+  <span class="prop">ddos_protection_plan</span> {
+    <span class="fn">id</span>     = <span class="var">azurerm_network_ddos_protection_plan.ddos.id</span>
+    <span class="fn">enable</span> = <span class="kw">true</span>
+  }
+}</div>
+      <div class="code-label" style="margin-top:16px">Microsoft Sentinel — SIEM Setup</div>
+      <div class="code-block"><span class="cmt"># Sentinel Data Connectors — Banking</span>
+<span class="fn">Azure Activity</span>       → All mgmt plane logs
+<span class="fn">Azure Firewall</span>        → Network flow + threat
+<span class="fn">Azure AD</span>             → Sign-in + audit logs
+<span class="fn">Defender for Cloud</span>   → Security alerts
+<span class="fn">AKS Audit Logs</span>       → K8s control plane
+<span class="fn">NSG Flow Logs</span>        → Traffic analytics
+<span class="fn">Key Vault Logs</span>       → Secret access audit</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 15 — TERRAFORM IMPLEMENTATION
+═══════════════════════════════════════════════ -->
+<section class="section" id="terraform">
+  <div class="section-header">
+    <span class="section-num">15</span>
+    <h2 class="section-title">Terraform — Full Banking IaC Implementation</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-dot">1</div>
+      <div class="flow-content">
+        <div class="flow-title">Terraform Project Structure</div>
+        <div class="code-block"><span class="fn">banking-infra/</span>
+├── <span class="prop">main.tf</span>           <span class="cmt"># Provider config</span>
+├── <span class="prop">variables.tf</span>      <span class="cmt"># Input variables</span>
+├── <span class="prop">outputs.tf</span>        <span class="cmt"># Output values</span>
+├── <span class="prop">backend.tf</span>        <span class="cmt"># Remote state (Azure Storage)</span>
+├── <span class="fn">modules/</span>
+│   ├── <span class="fn">hub-network/</span>    <span class="cmt"># Hub VNet, Firewall, Bastion</span>
+│   ├── <span class="fn">spoke-banking/</span>  <span class="cmt"># Banking spoke VNet</span>
+│   ├── <span class="fn">aks/</span>            <span class="cmt"># AKS cluster config</span>
+│   ├── <span class="fn">security/</span>       <span class="cmt"># NSG, DDoS, Policies</span>
+│   └── <span class="fn">monitoring/</span>     <span class="cmt"># Log Analytics, Sentinel</span>
+└── <span class="fn">environments/</span>
+    ├── <span class="fn">dev/</span>
+    ├── <span class="fn">staging/</span>
+    └── <span class="fn">prod/</span></div>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="flow-dot">2</div>
+      <div class="flow-content">
+        <div class="flow-title">Hub VNet + Azure Firewall Premium</div>
+        <div class="code-block"><span class="cmt"># modules/hub-network/main.tf</span>
+<span class="kw">resource</span> <span class="str">"azurerm_virtual_network"</span> <span class="str">"hub"</span> {
+  <span class="prop">name</span>                = <span class="str">"vnet-hub-banking-prod"</span>
+  <span class="prop">address_space</span>       = [<span class="str">"10.0.0.0/16"</span>]
+  <span class="prop">location</span>            = <span class="var">var.location</span>
+  <span class="prop">resource_group_name</span> = <span class="var">var.rg_name</span>
+  <span class="prop">dns_servers</span>         = [<span class="str">"168.63.129.16"</span>]  <span class="cmt"># Azure DNS</span>
+  <span class="prop">ddos_protection_plan</span> { <span class="fn">enable</span> = <span class="kw">true</span> }
+}
+
+<span class="kw">resource</span> <span class="str">"azurerm_firewall"</span> <span class="str">"fw"</span> {
+  <span class="prop">name</span>               = <span class="str">"fw-hub-banking-prod"</span>
+  <span class="prop">location</span>           = <span class="var">var.location</span>
+  <span class="prop">resource_group_name</span> = <span class="var">var.rg_name</span>
+  <span class="prop">sku_name</span>           = <span class="str">"AZFW_VNet"</span>
+  <span class="prop">sku_tier</span>           = <span class="str">"Premium"</span>  <span class="cmt"># REQUIRED for banking</span>
+  <span class="prop">zones</span>              = [<span class="str">"1"</span>, <span class="str">"2"</span>, <span class="str">"3"</span>]
+  <span class="prop">firewall_policy_id</span> = <span class="var">azurerm_firewall_policy.fw_policy.id</span>
+
+  <span class="prop">ip_configuration</span> {
+    <span class="fn">name</span>                 = <span class="str">"fw-ipconfig"</span>
+    <span class="fn">subnet_id</span>            = <span class="var">azurerm_subnet.firewall.id</span>
+    <span class="fn">public_ip_address_id</span> = <span class="var">azurerm_public_ip.fw_pip.id</span>
+  }
+}
+
+<span class="kw">resource</span> <span class="str">"azurerm_firewall_policy"</span> <span class="str">"fw_policy"</span> {
+  <span class="prop">name</span>                     = <span class="str">"fwpol-banking-prod"</span>
+  <span class="prop">resource_group_name</span>     = <span class="var">var.rg_name</span>
+  <span class="prop">location</span>                = <span class="var">var.location</span>
+  <span class="prop">sku</span>                     = <span class="str">"Premium"</span>
+  <span class="prop">threat_intelligence_mode</span>= <span class="str">"Deny"</span>
+  <span class="prop">tls_certificate</span>         { ... }
+  <span class="prop">intrusion_detection</span>     { <span class="fn">mode</span> = <span class="str">"Deny"</span> }
+}</div>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="flow-dot">3</div>
+      <div class="flow-content">
+        <div class="flow-title">Spoke VNet + Peering + UDR</div>
+        <div class="code-block"><span class="cmt"># Spoke VNet — Banking Workloads</span>
+<span class="kw">resource</span> <span class="str">"azurerm_virtual_network_peering"</span> <span class="str">"hub_to_spoke"</span> {
+  <span class="prop">name</span>                      = <span class="str">"peer-hub-to-banking"</span>
+  <span class="prop">resource_group_name</span>       = <span class="var">var.hub_rg</span>
+  <span class="prop">virtual_network_name</span>      = <span class="var">azurerm_virtual_network.hub.name</span>
+  <span class="prop">remote_virtual_network_id</span> = <span class="var">azurerm_virtual_network.spoke.id</span>
+  <span class="prop">allow_forwarded_traffic</span>   = <span class="kw">true</span>
+  <span class="prop">allow_gateway_transit</span>     = <span class="kw">true</span>
+}
+
+<span class="cmt"># UDR — Force all traffic via Firewall</span>
+<span class="kw">resource</span> <span class="str">"azurerm_route_table"</span> <span class="str">"aks_rt"</span> {
+  <span class="prop">name</span>                          = <span class="str">"rt-aks-banking"</span>
+  <span class="prop">disable_bgp_route_propagation</span> = <span class="kw">true</span>
+  <span class="prop">route</span> {
+    <span class="fn">name</span>                   = <span class="str">"force-to-firewall"</span>
+    <span class="fn">address_prefix</span>         = <span class="str">"0.0.0.0/0"</span>
+    <span class="fn">next_hop_type</span>          = <span class="str">"VirtualAppliance"</span>
+    <span class="fn">next_hop_in_ip_address</span> = <span class="var">azurerm_firewall.fw.ip_configuration[0].private_ip_address</span>
+  }
+}</div>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="flow-dot">4</div>
+      <div class="flow-content">
+        <div class="flow-title">Deploy & Validate Pipeline</div>
+        <div class="code-block"><span class="cmt"># Azure DevOps Pipeline — Terraform Deploy</span>
+<span class="kw">stages</span>:
+  - <span class="prop">stage</span>: <span class="str">Validate</span>
+    <span class="fn">jobs</span>:
+      - <span class="fn">terraform init</span> -backend-config=<span class="str">"prod.hcl"</span>
+      - <span class="fn">terraform validate</span>
+      - <span class="fn">terraform fmt</span> -check
+      - <span class="fn">checkov</span> -d . --framework terraform <span class="cmt"># Security scan</span>
+      - <span class="fn">tfsec</span> .                               <span class="cmt"># Terraform sec scan</span>
+
+  - <span class="prop">stage</span>: <span class="str">Plan</span>
+    <span class="fn">jobs</span>:
+      - <span class="fn">terraform plan</span> -var-file=<span class="str">"prod.tfvars"</span> -out=plan.tfplan
+      - <span class="cmt"># Save plan artifact</span>
+      - <span class="cmt"># Manual approval required (banking)</span>
+
+  - <span class="prop">stage</span>: <span class="str">Apply</span>
+    <span class="fn">condition</span>: and(succeeded(), eq(variables[<span class="str">'Build.SourceBranch'</span>], <span class="str">'refs/heads/main'</span>))
+    <span class="fn">jobs</span>:
+      - <span class="fn">terraform apply</span> plan.tfplan
+      - <span class="fn">az aks get-credentials</span> --resource-group ... --name ...
+      - <span class="fn">kubectl apply</span> -f k8s/network-policies/
+      - <span class="fn">kubectl apply</span> -f k8s/ingress/</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 16 — DEVSECOPS
+═══════════════════════════════════════════════ -->
+<section class="section" id="devsecops">
+  <div class="section-header">
+    <span class="section-num">16</span>
+    <h2 class="section-title">DevSecOps — Security in Every Pipeline Stage</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="diagram-3d">
+    <svg viewBox="0 0 820 180" width="820" height="180" style="max-width:100%">
+      <text x="410" y="22" text-anchor="middle" font-family="Space Mono" font-size="12" fill="#7aabcc" letter-spacing="3">DEVSECOPS PIPELINE — BANKING</text>
+
+      <rect x="20" y="45" width="105" height="120" rx="10" fill="rgba(0,212,255,0.08)" stroke="#00d4ff" stroke-width="1.5"/>
+      <text x="72" y="67" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#00d4ff" letter-spacing="1">CODE</text>
+      <text x="72" y="88" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7aabcc">Git commit</text>
+      <text x="72" y="104" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7aabcc">Secret scan</text>
+      <text x="72" y="120" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7aabcc">SAST analysis</text>
+      <text x="72" y="136" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7aabcc">Credential check</text>
+      <text x="72" y="153" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#00ff88">✓ Gitleaks</text>
+      <line x1="127" y1="105" x2="152" y2="105" stroke="#00d4ff" stroke-width="1.5" marker-end="url(#arr)"/>
+
+      <rect x="155" y="45" width="105" height="120" rx="10" fill="rgba(0,255,136,0.07)" stroke="#00ff88" stroke-width="1.5"/>
+      <text x="207" y="67" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#00ff88" letter-spacing="1">BUILD</text>
+      <text x="207" y="88" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7aabcc">Docker build</text>
+      <text x="207" y="104" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7aabcc">Image scan</text>
+      <text x="207" y="120" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7aabcc">SBOM generate</text>
+      <text x="207" y="136" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7aabcc">Vuln patching</text>
+      <text x="207" y="153" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#00ff88">✓ Trivy/Prisma</text>
+      <line x1="262" y1="105" x2="287" y2="105" stroke="#00ff88" stroke-width="1.5" marker-end="url(#arr)"/>
+
+      <rect x="290" y="45" width="105" height="120" rx="10" fill="rgba(255,215,0,0.07)" stroke="#ffd700" stroke-width="1.5"/>
+      <text x="342" y="67" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#ffd700" letter-spacing="1">TEST</text>
+      <text x="342" y="88" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7aabcc">DAST testing</text>
+      <text x="342" y="104" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7aabcc">Pen testing</text>
+      <text x="342" y="120" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7aabcc">Compliance check</text>
+      <text x="342" y="136" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7aabcc">IaC sec scan</text>
+      <text x="342" y="153" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#00ff88">✓ Checkov/tfsec</text>
+      <line x1="397" y1="105" x2="422" y2="105" stroke="#ffd700" stroke-width="1.5" marker-end="url(#arr)"/>
+
+      <rect x="425" y="45" width="105" height="120" rx="10" fill="rgba(168,85,247,0.08)" stroke="#a855f7" stroke-width="1.5"/>
+      <text x="477" y="67" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#a855f7" letter-spacing="1">DEPLOY</text>
+      <text x="477" y="88" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7aabcc">Terraform plan</text>
+      <text x="477" y="104" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7aabcc">Manual approval</text>
+      <text x="477" y="120" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7aabcc">Policy gates</text>
+      <text x="477" y="136" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7aabcc">Signed images</text>
+      <text x="477" y="153" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#00ff88">✓ OPA + Notary</text>
+      <line x1="532" y1="105" x2="557" y2="105" stroke="#a855f7" stroke-width="1.5" marker-end="url(#arr)"/>
+
+      <rect x="560" y="45" width="105" height="120" rx="10" fill="rgba(255,107,53,0.08)" stroke="#ff6b35" stroke-width="1.5"/>
+      <text x="612" y="67" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#ff6b35" letter-spacing="1">MONITOR</text>
+      <text x="612" y="88" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7aabcc">Runtime security</text>
+      <text x="612" y="104" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7aabcc">Anomaly detect</text>
+      <text x="612" y="120" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7aabcc">Alert & respond</text>
+      <text x="612" y="136" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7aabcc">Incident mgmt</text>
+      <text x="612" y="153" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#00ff88">✓ Sentinel/Falco</text>
+      <line x1="667" y1="105" x2="692" y2="105" stroke="#ff6b35" stroke-width="1.5" marker-end="url(#arr)"/>
+
+      <rect x="695" y="45" width="105" height="120" rx="10" fill="rgba(0,212,255,0.08)" stroke="#00d4ff" stroke-width="1.5"/>
+      <text x="747" y="67" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#00d4ff" letter-spacing="1">RESPOND</text>
+      <text x="747" y="88" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7aabcc">Auto-remediate</text>
+      <text x="747" y="104" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7aabcc">SOAR playbooks</text>
+      <text x="747" y="120" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7aabcc">NSG auto-block</text>
+      <text x="747" y="136" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7aabcc">Pod isolation</text>
+      <text x="747" y="153" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#00ff88">✓ Logic Apps</text>
+    </svg>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 17 — MONITORING & OBSERVABILITY
+═══════════════════════════════════════════════ -->
+<section class="section" id="monitoring">
+  <div class="section-header">
+    <span class="section-num">17</span>
+    <h2 class="section-title">Monitoring & Network Observability</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="grid3">
+    <div class="card">
+      <span class="card-icon">📊</span>
+      <div class="card-title">Network Watcher</div>
+      <div class="card-sub">Azure Network Watcher</div>
+      <div class="card-body">
+        NSG Flow Logs, Connection Monitor, IP Flow Verify, Next Hop, Packet Capture. Banking లో traffic patterns మరియు anomaly detection కి essential.
+      </div>
+      <div class="tags"><span class="tag">Flow Logs</span><span class="tag">Topology</span><span class="tag">Packet Cap</span></div>
+    </div>
+    <div class="card">
+      <span class="card-icon">📈</span>
+      <div class="card-title">Azure Monitor + Log Analytics</div>
+      <div class="card-sub">Centralized logging</div>
+      <div class="card-body">
+        All logs → Log Analytics Workspace. KQL queries తో real-time alerting. Banking SLA breaches, unauthorized access, unusual patterns detect.
+      </div>
+      <div class="tags"><span class="tag">KQL</span><span class="tag">Alerts</span><span class="tag">Workbooks</span></div>
+    </div>
+    <div class="card">
+      <span class="card-icon">🔭</span>
+      <div class="card-title">Microsoft Sentinel</div>
+      <div class="card-sub">Cloud-native SIEM/SOAR</div>
+      <div class="card-body">
+        AI-powered threat detection. Banking fraud patterns, lateral movement, data exfiltration detect. Automatic incident response via playbooks.
+      </div>
+      <div class="tags"><span class="tag">SIEM</span><span class="tag">SOAR</span><span class="tag">AI Detect</span></div>
+    </div>
+  </div>
+
+  <div class="code-label">KQL — Banking Network Security Queries</div>
+  <div class="code-block"><span class="cmt">// Query 1: Detect denied traffic on AKS subnets</span>
+<span class="fn">AzureNetworkAnalytics_CL</span>
+| <span class="kw">where</span> <span class="prop">FlowType_s</span> == <span class="str">"MaliciousFlow"</span>
+    <span class="kw">and</span> <span class="prop">SubType_s</span> == <span class="str">"FlowLog"</span>
+| <span class="kw">summarize</span> <span class="fn">count()</span> <span class="kw">by</span> <span class="prop">SrcIP_s</span>, <span class="prop">DestIP_s</span>, <span class="prop">bin</span>(<span class="var">TimeGenerated</span>, <span class="num">5m</span>)
+| <span class="kw">where</span> <span class="fn">count_</span> > <span class="num">100</span>  <span class="cmt">// Possible DDoS</span>
+
+<span class="cmt">// Query 2: Track Key Vault access (banking secrets)</span>
+<span class="fn">AzureDiagnostics</span>
+| <span class="kw">where</span> <span class="prop">ResourceType</span> == <span class="str">"VAULTS"</span>
+    <span class="kw">and</span> <span class="prop">OperationName</span> == <span class="str">"SecretGet"</span>
+| <span class="kw">project</span> <span class="var">TimeGenerated</span>, <span class="prop">CallerIPAddress</span>, <span class="prop">identity_claim_upn_s</span>, <span class="prop">requestUri_s</span>
+| <span class="kw">where</span> <span class="prop">CallerIPAddress</span> !startswith <span class="str">"10."</span>  <span class="cmt">// Alert on non-private IP!</span></div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 18 — SKILLS MATRIX
+═══════════════════════════════════════════════ -->
+<section class="section" id="skills">
+  <div class="section-header">
+    <span class="section-num">18</span>
+    <h2 class="section-title">Skills Assessment — Azure Networking</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="grid2">
+    <div>
+      <div class="progress-row"><div class="progress-label"><span>VNet Design & Subnets</span><span>Expert</span></div><div class="progress-bar"><div class="progress-fill fill-blue" style="width:95%"></div></div></div>
+      <div class="progress-row"><div class="progress-label"><span>NSG & Security Rules</span><span>Expert</span></div><div class="progress-bar"><div class="progress-fill fill-blue" style="width:93%"></div></div></div>
+      <div class="progress-row"><div class="progress-label"><span>Azure Firewall Premium</span><span>Advanced</span></div><div class="progress-bar"><div class="progress-fill fill-orange" style="width:88%"></div></div></div>
+      <div class="progress-row"><div class="progress-label"><span>Private Link/Endpoints</span><span>Expert</span></div><div class="progress-bar"><div class="progress-fill fill-green" style="width:96%"></div></div></div>
+      <div class="progress-row"><div class="progress-label"><span>ExpressRoute & VPN</span><span>Advanced</span></div><div class="progress-bar"><div class="progress-fill fill-orange" style="width:85%"></div></div></div>
+      <div class="progress-row"><div class="progress-label"><span>Hub-Spoke Topology</span><span>Expert</span></div><div class="progress-bar"><div class="progress-fill fill-blue" style="width:94%"></div></div></div>
+    </div>
+    <div>
+      <div class="progress-row"><div class="progress-label"><span>AKS Networking (Azure CNI)</span><span>Expert</span></div><div class="progress-bar"><div class="progress-fill fill-purple" style="width:92%"></div></div></div>
+      <div class="progress-row"><div class="progress-label"><span>Calico Network Policies</span><span>Advanced</span></div><div class="progress-bar"><div class="progress-fill fill-purple" style="width:87%"></div></div></div>
+      <div class="progress-row"><div class="progress-label"><span>Terraform Networking IaC</span><span>Expert</span></div><div class="progress-bar"><div class="progress-fill fill-green" style="width:95%"></div></div></div>
+      <div class="progress-row"><div class="progress-label"><span>Zero Trust / Banking Grade</span><span>Advanced</span></div><div class="progress-bar"><div class="progress-fill fill-orange" style="width:90%"></div></div></div>
+      <div class="progress-row"><div class="progress-label"><span>Microsoft Sentinel SIEM</span><span>Advanced</span></div><div class="progress-bar"><div class="progress-fill fill-blue" style="width:83%"></div></div></div>
+      <div class="progress-row"><div class="progress-label"><span>DevSecOps Pipeline</span><span>Expert</span></div><div class="progress-bar"><div class="progress-fill fill-green" style="width:91%"></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<div class="banner" style="margin-bottom:60px">
+  <h2>🎯 Interview Ready Checklist</h2>
+  <p style="margin-top:12px; font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--accent3)">
+    ✓ Hub-Spoke topology explain చేయగలను &nbsp;|&nbsp; ✓ Private Endpoints vs Service Endpoints difference &nbsp;|&nbsp; ✓ AKS Azure CNI vs Kubenet<br>
+    ✓ Forced tunneling setup &nbsp;|&nbsp; ✓ WAF + DDoS banking setup &nbsp;|&nbsp; ✓ Zero Trust network architecture &nbsp;|&nbsp; ✓ Terraform full implementation
+  </p>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+// Animate progress bars on scroll
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting) {
+      e.target.querySelectorAll('.progress-fill').forEach(b => {
+        b.style.width = b.style.width;
+      });
+    }
+  });
+}, { threshold: 0.3 });
+document.querySelectorAll('.section').forEach(s => observer.observe(s));
+
+// Subtle card hover glow
+document.querySelectorAll('.card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const r = card.getBoundingClientRect();
+    const x = e.clientX - r.left;
+    const y = e.clientY - r.top;
+    card.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(0,212,255,0.06), var(--panel) 60%)`;
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.background = '';
+  });
+});
+</script>
+</body>
+</html>
